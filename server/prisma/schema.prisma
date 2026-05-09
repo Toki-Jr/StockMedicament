@@ -1,0 +1,76 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model user {
+  id        Int      @id @default(autoincrement())
+  nom       String
+  prenom    String
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model medicament {
+  id_medoc                Int        @id @default(autoincrement())
+  code_cip                String     @unique
+  nom                     String
+  forme                   String
+  dosage                  Decimal
+  prix_unitaire           Int
+  seuil_alerte_qte        Int
+  seuil_alerte_peremption Int
+  lots                    lot[]
+  commandes               commande[]
+  alertes                 alerte[]
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+}
+
+model lot {
+  id_lot           Int              @id @default(autoincrement())
+  numero_lot       String
+  date_fabrication DateTime
+  date_expiration  DateTime
+  quantite_entre   Int
+  quantite_sortie  Int
+  id_medoc         Int
+  medicament       medicament       @relation(fields: [id_medoc], references: [id_medoc])
+  mouvements       mouvementstock[]
+}
+
+model mouvementstock {
+  id_mvt       Int      @id @default(autoincrement())
+  type_mvt     String
+  quantite_mvt Int
+  date_mvt     DateTime @default(now())
+  motif        String
+  id_lot       Int
+  lot          lot      @relation(fields: [id_lot], references: [id_lot])
+}
+
+model commande {
+  id_commande   Int        @id @default(autoincrement())
+  date_commande DateTime   @default(now())
+  statut        String     @default("en_attente")
+  quantite      Int
+  id_medoc      Int
+  medicament    medicament @relation(fields: [id_medoc], references: [id_medoc])
+}
+
+model alerte {
+  id_alerte   Int        @id @default(autoincrement())
+  type_alerte String
+  message     String
+  lu          Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  id_medoc    Int
+  medicament  medicament @relation(fields: [id_medoc], references: [id_medoc])
+}

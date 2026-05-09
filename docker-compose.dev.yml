@@ -1,0 +1,38 @@
+version: "3.9"
+
+# Usage : docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  nginx:
+    ports:
+      - "80:80"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev          # étape de build "dev" dans le Dockerfile multi-stage
+    volumes:
+      - ./frontend:/app    # hot-reload Vite
+      - /app/node_modules  # évite d'écraser node_modules du container
+    environment:
+      - VITE_API_URL=http://localhost/api
+
+  backend:
+    build:
+      context: ./backend
+      target: dev          # nodemon actif
+    volumes:
+      - ./backend:/app     # hot-reload nodemon
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "5000:5000"        # accès direct à l'API en dev
+
+  postgres:
+    ports:
+      - "5432:5432"        # accès direct depuis DBeaver / pgAdmin
+
+  redis:
+    ports:
+      - "6379:6379"        # accès direct depuis Redis Insight
