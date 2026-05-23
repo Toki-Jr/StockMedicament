@@ -14,8 +14,12 @@ model user {
   email     String   @unique
   password  String
   role      String   @default("user")
+  photo     String?
+  approuve  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  commandes commande[]
+  historiques historique[]
 }
 
 model medicament {
@@ -59,10 +63,12 @@ model mouvementstock {
 model commande {
   id_commande   Int        @id @default(autoincrement())
   date_commande DateTime   @default(now())
-  statut        String     @default("en_attente")
+  statut        String     @default("brouillon")
   quantite      Int
   id_medoc      Int
+  id_user       Int
   medicament    medicament @relation(fields: [id_medoc], references: [id_medoc])
+  user          user       @relation(fields: [id_user], references: [id])
 }
 
 model alerte {
@@ -70,7 +76,17 @@ model alerte {
   type_alerte String
   message     String
   lu          Boolean    @default(false)
+  role_cible  String?
   createdAt   DateTime   @default(now())
   id_medoc    Int
   medicament  medicament @relation(fields: [id_medoc], references: [id_medoc])
+}
+
+model historique {
+  id_historique Int      @id @default(autoincrement())
+  action        String   
+  description   String
+  id_user       Int
+  user          user     @relation(fields: [id_user], references: [id])
+  createdAt     DateTime @default(now())
 }

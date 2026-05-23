@@ -76,10 +76,12 @@ const { authenticate, authorize } = require('../middlewares/auth.middleware');
  *     responses:
  *       200: { description: Mis à jour }
  */
-router.get('/', authenticate, ctrl.getAll);
-router.post('/', authenticate, ctrl.create);
-router.get('/:id', authenticate, ctrl.getById);
-router.patch('/:id/statut', authenticate, authorize('admin', 'pharmacien'), ctrl.updateStatut);
-router.delete('/:id', authenticate, authorize('admin'), ctrl.remove);
+router.get('/',                authenticate,                        ctrl.getAll);
+router.get('/:id',             authenticate,                        ctrl.getById);
+router.post('/',               authenticate,                        ctrl.create);
+router.patch('/:id/envoyer',   authenticate,                        ctrl.envoyer);
+router.delete('/:id',          authenticate,                        ctrl.removeBrouillon);
+router.patch('/:id/valider',   authenticate, authorize('admin'),    ctrl.valider);
+router.patch('/:id/rejeter',   authenticate, authorize('admin'),    ctrl.rejeter);
 
 module.exports = router;

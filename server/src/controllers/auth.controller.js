@@ -28,6 +28,15 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  try {
+    const user = await authService.getUserById(req.user.id);
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 const updateUser = async (req, res) => {
   try {
     const user = await authService.updateUser(req.params.id, req.body);
@@ -37,13 +46,41 @@ const updateUser = async (req, res) => {
   }
 };
 
-const deleteUser = async (req, res) => {
+const updateMe = async (req, res) => {
   try {
-    await authService.deleteUser(req.params.id);
-    return success(res, { message: 'Utilisateur supprimé' });
+    const user = await authService.updateUser(req.user.id, req.body);
+    res.json(user);
   } catch (err) {
-    return serverError(res, err);
+    res.status(500).json({ message: err.message });
   }
 };
 
-module.exports = { register, login, getAllUsers, updateUser, deleteUser };
+const deleteMe = async (req, res) => {
+  try {
+    await authService.deleteUser(req.user.id, req.user.id);
+    res.json({ message: 'Compte supprimé' });
+  } catch (err) {
+    res.status(err.statusCode ?? 500).json({ message: err.message });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    await authService.deleteUser(req.params.id, req.user.id);
+    res.json({ message: 'Utilisateur supprimé' });
+  } catch (err) {
+    console.error('deleteUser error:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const approuverUser = async (req, res) => {
+  try {
+    const user = await authService.approuverUser(req.params.id, req.user.id);
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { register, login, getAllUsers, getMe,updateUser, updateMe, deleteMe, deleteUser, approuverUser };

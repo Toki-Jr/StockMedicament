@@ -1,0 +1,17 @@
+-------------------Pour éviter la rpétition---------------------- 
+Thème (dark/light), utilisateur connecté, langue (i18n), panier d'achat. Bref, les données partagées par beaucoup de composants.
+
+***CreateContext + useContext**** permet de partager les données global sans passer le props
+***createContext*** crée le canal, 
+***Provider*** injecte la valeur, et 
+***useContext*** la consomme directement là où on en a besoin.
+***useCallback*** — mémorise la référence d'une fonction.
+
+const token = "eyJhbGci..."; // token présent → truthy
+const isAuthenticated = !!token; // → true
+
+const token = null;            // pas de token → falsy
+const isAuthenticated = !!token; // → false
+
+const token = "";              // chaîne vide → falsy
+const isAuthenticated = !!token; // → false

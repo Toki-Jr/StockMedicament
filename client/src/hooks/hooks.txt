@@ -1,0 +1,11 @@
+Fonctions spéciales en Reqct permet d'utiliser les fonctionnalités
+
+| Hook          | Utilité                          |
+| ------------- | -------------------------------- |
+| `useState`    | Gérer les données                |
+| `useEffect`   | Exécuter du code automatiquement |
+| `useContext`  | Partager des données globales    |
+| `useRef`      | Référencer un élément            |
+| `useMemo`     | Optimiser les calculs            |
+| `useCallback` | Optimiser les fonctions          |
+| `useReducer`  | Gérer un état complexe           |

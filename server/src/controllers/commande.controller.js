@@ -1,44 +1,47 @@
-const svc = require('../services/commande.service');
-const { success, created, badRequest } = require('../utils/response');
+const service = require('../services/commande.service');
 
-const getAll = async (req, res, next) => {
-  try {
-    const data = await svc.getAll(req.query.statut);
-    return success(res, data, `${data.length} commande(s)`);
-  } catch (err) { next(err); }
+const create          = async (req, res) => {
+  try { res.status(201).json(await service.create(req.body, req.user.id)); }
+  catch (err) { res.status(err.statusCode ?? 500).json({ message: err.message }); }
 };
 
-const getById = async (req, res, next) => {
-  try {
-    const data = await svc.getById(req.params.id);
-    return success(res, data);
-  } catch (err) { next(err); }
+const envoyer         = async (req, res) => {
+  try { res.json(await service.envoyer(req.params.id, req.user.id)); }
+  catch (err) { res.status(err.statusCode ?? 500).json({ message: err.message }); }
 };
 
-const create = async (req, res, next) => {
-  try {
-    const { quantite, id_medoc } = req.body;
-    if (!quantite || !id_medoc)
-      return badRequest(res, 'Champs requis : quantite, id_medoc');
-    const data = await svc.create(req.body);
-    return created(res, data, 'Commande créée');
-  } catch (err) { next(err); }
+const removeBrouillon = async (req, res) => {
+  try { res.json(await service.removeBrouillon(req.params.id, req.user.id)); }
+  catch (err) { res.status(err.statusCode ?? 500).json({ message: err.message }); }
 };
 
-const updateStatut = async (req, res, next) => {
-  try {
-    const { statut } = req.body;
-    if (!statut) return badRequest(res, 'Champ requis : statut');
-    const data = await svc.updateStatut(req.params.id, statut);
-    return success(res, data, `Commande passée à "${statut}"`);
-  } catch (err) { next(err); }
+const valider         = async (req, res) => {
+  try { 
+    const { motif } = req.body;
+    res.json(await service.valider(req.params.id, motif)); 
+  }
+  catch (err) { res.status(err.statusCode ?? 500).json({ message: err.message }); }
 };
 
-const remove = async (req, res, next) => {
+const rejeter = async (req, res) => {
   try {
-    await svc.remove(req.params.id);
-    return success(res, null, 'Commande supprimée');
-  } catch (err) { next(err); }
+    const { motif } = req.body;
+    if (!motif || motif.trim() === '')
+      return res.status(400).json({ message: 'Le motif de rejet est obligatoire' });
+
+    res.json(await service.rejeter(req.params.id, motif.trim()));
+  }
+  catch (err) { res.status(err.statusCode ?? 500).json({ message: err.message }); }
 };
 
-module.exports = { getAll, getById, create, updateStatut, remove };
+const getAll          = async (req, res) => {
+  try { res.json(await service.getAll(req.user.role, req.user.id)); }
+  catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+const getById         = async (req, res) => {
+  try { res.json(await service.getById(req.params.id)); }
+  catch (err) { res.status(err.statusCode ?? 500).json({ message: err.message }); }
+};
+
+module.exports = { create, envoyer, removeBrouillon, valider, rejeter, getAll, getById };

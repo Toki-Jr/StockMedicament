@@ -52,10 +52,14 @@ const { authenticate, authorize } = require('../middlewares/auth.middleware');
  *       200: { description: Token JWT }
  */
 
-router.post('/register', ctrl.register);
-router.post('/login', ctrl.login);
-router.get('/users', authenticate, authorize('admin'), ctrl.getAllUsers);
-router.put('/users/:id', authenticate, authorize('admin'), ctrl.updateUser);
+router.post('/register',    ctrl.register);
+router.post('/login',       ctrl.login);
+router.get('/me',           authenticate,                     ctrl.getMe);
+router.put('/me',           authenticate,                     ctrl.updateMe);
+router.get('/users',        authenticate, authorize('admin'), ctrl.getAllUsers);
+router.put('/users/:id',    authenticate, authorize('admin'), ctrl.updateUser);
+router.delete('/me',        authenticate,                     ctrl.deleteMe);
 router.delete('/users/:id', authenticate, authorize('admin'), ctrl.deleteUser);
+router.patch('/users/:id/approuver', authenticate, authorize('admin'), ctrl.approuverUser);
 
 module.exports = router;

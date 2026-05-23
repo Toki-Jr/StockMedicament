@@ -10,13 +10,15 @@ const mouvementRoutes  = require('./routes/mouvement.routes');
 const lotsRoutes       = require('./routes/lot.routes');
 const commandeRoutes   = require('./routes/commande.routes');
 const alerteRoutes     = require('./routes/alerte.routes');
+const historiqueRoute = require('./routes/historique.routes');
 
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
@@ -30,6 +32,7 @@ app.use('/api/mouvements',  mouvementRoutes);
 app.use('/api/lots',        lotsRoutes);
 app.use('/api/commandes',   commandeRoutes);
 app.use('/api/alertes',     alerteRoutes);
+app.use('/api/historiques', historiqueRoute);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -1,14 +1,16 @@
+import { RouterProvider } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import router from './router/router';
+import ThemeToggle from './components/shared/ThemeToggle';  
+import { ThemeProvider } from './context/ThemeContext';
 
-function App() {
-
+export default function App() {
   return (
-    <>
-      
-      <div className="ticks">
-        <h2>Tes Project medicament</h2>
-      </div>
-    </>
-  )
+    
+    <ThemeProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ThemeProvider>
+  );
 }
-
-export default App
