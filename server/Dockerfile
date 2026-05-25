@@ -8,4 +8,5 @@ RUN npx prisma generate
 
 EXPOSE 5000
 
-CMD ["node", "src/server.js"]
+# Applique les migrations Prisma à la BDD puis démarre le serveur Node
+CMD npx prisma migrate deploy && node src/server.js
