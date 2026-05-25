@@ -1,20 +1,30 @@
 const prisma = require('../config/prisma');
 const { log } = require('./historique.service');
 
-const create = async ({ quantite, id_medoc }, userId) => {
+const create = async ({ lignes }, userId) => {
+  if (!lignes || lignes.length === 0) {
+    const error = new Error("Le panier est vide");
+    error.statusCode = 400;
+    throw error;
+  }
 
-  // await log('COMMANDE_CREEE', `Commande de "${medicament.nom} ", quantité: ${quantite} créée`, userId);
-
-  return prisma.commande.create({
-    data: {
-      quantite:   parseInt(quantite),
-      statut:     'brouillon',
-      medicament: { connect: { id_medoc: parseInt(id_medoc) } },
-      user:       { connect: { id:       parseInt(userId)   } },
-    },
-    include: { medicament: { select: { nom: true } } },
-  });
+  // On utilise une transaction Prisma pour s'assurer que TOUT est créé ou RIEN du tout (en cas d'erreur)
+  return prisma.$transaction(
+    lignes.map(l => 
+      prisma.commande.create({
+        data: {
+          quantite:   parseInt(l.quantite),
+          statut:     'brouillon',
+          medicament: { connect: { id_medoc: parseInt(l.id_medoc) } },
+          user:       { connect: { id:       parseInt(userId)   } },
+        },
+        include: { medicament: { select: { nom: true } } },
+      })
+    )
+  );
 };
+
+module.exports = { create };
 
 // brouillon → en_attente  |  notif → ADMIN
 const envoyer = async (id, userId) => {

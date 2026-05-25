@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/auth.controller');
 const { authenticate, authorize } = require('../middlewares/auth.middleware');
+const changePassword = require('../controllers/changePassword.controller');
+const updatePreferences = require('../controllers/updatePreferences.controller');
 
 /**
  * @swagger
@@ -60,6 +62,8 @@ router.get('/users',        authenticate, authorize('admin'), ctrl.getAllUsers);
 router.put('/users/:id',    authenticate, authorize('admin'), ctrl.updateUser);
 router.delete('/me',        authenticate,                     ctrl.deleteMe);
 router.delete('/users/:id', authenticate, authorize('admin'), ctrl.deleteUser);
-router.patch('/users/:id/approuver', authenticate, authorize('admin'), ctrl.approuverUser);
+router.patch('/users/:id/approuver',    authenticate, authorize('admin'), ctrl.approuverUser);
+router.patch('/change-password/:id',    authenticate, changePassword.changePasswordController);
+router.patch('/preferences',            authenticate, updatePreferences.updatePreferencesController);
 
 module.exports = router;

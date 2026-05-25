@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Variables par défaut (light) — surchargées par ThemeContext */
 :root {
   --bg-app:         #f1f5f9;
   --bg-sidebar:     #ffffff;
@@ -22,16 +21,28 @@
   --warning:        #d97706;
   --shadow:         0 1px 8px rgba(0,0,0,0.08);
   --shadow-lg:      0 4px 24px rgba(0,0,0,0.10);
+  --font-size-base: 14px; /* ← modifiée dynamiquement par useFontSize */
+}
+
+/* ✅ AJOUT 1 — html lit la variable, tous les rem de l'app s'adaptent */
+html {
+  font-size: var(--font-size-base);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg-app);
+  font-family: "DM Sans", Arial, sans-serif; /* ✅ CORRECTION — DM Sans est importé, pas Roboto */
+  font-size: 1rem;                           /* ✅ AJOUT 2 — rem au lieu de 16px fixe */
+  line-height: 1.5;
   color: var(--text-primary);
-  transition: background 0.3s, color 0.3s;
-  -webkit-font-smoothing: antialiased;
+  background-color: var(--bg-app);
+}
+
+/* ✅ AJOUT 3 — tout le texte hérite et réagit au changement */
+p, span, a, li, td, th, label,
+input, select, textarea, button {
+  font-size: inherit;
 }
 
 h1, h2, h3 {
@@ -39,42 +50,27 @@ h1, h2, h3 {
 }
 
 a { text-decoration: none; color: inherit; }
-
 button { font-family: inherit; }
 
-/* Scrollbar personnalisée */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* 1. On bloque la sélection et on fixe le curseur sur TOUT */
 *, *::before, *::after {
   user-select: none;
   cursor: default;
 }
 
-/* 2. On redonne la main aux éléments de saisie (Inputs, zones de texte) */
-input, 
-textarea, 
-[contenteditable="true"],
-.allow-select {
+input, textarea, [contenteditable="true"], .allow-select {
   user-select: text;
   cursor: text;
 }
 
-/* 3. On redonne le curseur "main" aux éléments cliquables (Boutons, liens) */
-button, 
-a, 
-select,
-summary,
-[role="button"],
-.cursor-pointer {
+button, a, select, summary, [role="button"], .cursor-pointer {
   cursor: pointer;
 }
 
-/* 4. Optionnel : permettre la sélection dans les tableaux de données 
-   si l'utilisateur a besoin de copier un nom de médicament */
-td{
-  user-select: text; /* Permet de copier les données de la table */
+td {
+  user-select: text;
 }

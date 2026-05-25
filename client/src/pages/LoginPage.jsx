@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate  = useNavigate();
-
+  const { resetToLight } = useTheme();
   const [form, setForm]       = useState({ email: '', password: '' });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(form);
+      resetToLight();
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Email ou mot de passe incorrect.');

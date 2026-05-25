@@ -11,6 +11,7 @@ const lotsRoutes       = require('./routes/lot.routes');
 const commandeRoutes   = require('./routes/commande.routes');
 const alerteRoutes     = require('./routes/alerte.routes');
 const historiqueRoute = require('./routes/historique.routes');
+const dashboardRoute = require('./routes/dashboard.routes');
 
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
 
@@ -33,6 +34,7 @@ app.use('/api/lots',        lotsRoutes);
 app.use('/api/commandes',   commandeRoutes);
 app.use('/api/alertes',     alerteRoutes);
 app.use('/api/historiques', historiqueRoute);
+app.use('/api/dashboard',   dashboardRoute);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -85,6 +85,6 @@ router.get('/', authenticate, ctrl.getAll);
  */
 router.get('/:id', authenticate, ctrl.getById);
 router.patch('/:id/lire', authenticate, ctrl.marquerLu);
-router.delete('/:id', authenticate, authorize('admin'), ctrl.remove);
+router.delete('/:id', authenticate, ctrl.remove);
 
 module.exports = router;

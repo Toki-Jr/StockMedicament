@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { login as apiLogin, register as apiRegister } from '../services/auth.api';
+import { login as apiLogin, register as apiRegister, updatePassword as apiUpdatePassword} from '../services/auth.api';
 import { storage } from '../utils/storage';
 
 const AuthContext = createContext(null);
@@ -34,6 +34,13 @@ export const AuthProvider = ({ children }) => {
     setUser(merged);
   };
 
+  const updatePassword = useCallback(async ({ currentPassword, newPassword }) => {
+    return await apiUpdatePassword({
+      id: user.id,
+      data: { currentPassword, newPassword },
+    });
+  }, [user?.id]);
+
   // Détruire user et token
   const logout = useCallback(() => {
     storage.removeItem('token');
@@ -52,6 +59,7 @@ export const AuthProvider = ({ children }) => {
     register,
     login,
     updateUser,
+    updatePassword,
     logout,
     isAuthenticated,
     isAdmin,

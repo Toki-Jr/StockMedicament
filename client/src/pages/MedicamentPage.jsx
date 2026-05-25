@@ -147,11 +147,10 @@ export default function MedicamentsPage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-
+   <div className="h-screen flex overflow-hidden rounded-xl border border-white/[0.05] shadow-2xl">
       {/* Toast */}
       {toast && (
-        <div className="fixed top-5 right-5 z-[2000] flex items-center gap-2 px-5 py-3 rounded-xl text-white text-[13px] font-medium shadow-lg"
+        <div className="fixed top-5 right-5 z-[2000] flex items-center gap-2 px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg"
              style={{ background: toast.type === 'error' ? C.red : C.greenDark }}>
           {toast.type === 'error' ? <X size={14} /> : <Check size={14} />}
           {toast.msg}
@@ -172,7 +171,7 @@ export default function MedicamentsPage() {
               <h1 className="text-[22px] font-medium tracking-tight leading-tight text-[var(--text-primary)]">
                 Liste de <span style={{ color: C.green }}>médicaments</span>
               </h1>
-              <p className="text-[12px] text-[var(--text-muted)] mt-0.5">
+              <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
                 {total} médicament(s) dans la base
               </p>
             </div>
@@ -180,7 +179,7 @@ export default function MedicamentsPage() {
           {canEdit && !drawerOpen && (
             <button
               onClick={openCreate}
-              className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-[13px] font-medium text-white border-none cursor-pointer"
+              className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white border-none cursor-pointer"
               style={{ background: C.greenDark }}>
               <Plus size={15} /> Nouveau médicament
             </button>
@@ -202,7 +201,7 @@ export default function MedicamentsPage() {
                onBlurCapture={e  => e.currentTarget.style.borderColor = 'var(--border)'}>
             <Search size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <input
-              className="flex-1 bg-transparent py-2.5 text-[13px] outline-none placeholder:opacity-40 text-[var(--text-primary)]"
+              className="flex-1 bg-transparent py-2.5 text-dynamic outline-none placeholder:opacity-40 text-[var(--text-primary)]"
               style={{ border: 'none' }}
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -225,7 +224,7 @@ export default function MedicamentsPage() {
                 <button
                   key={f.val}
                   onClick={() => setFiltre(f.val)}
-                  className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer transition-all duration-150"
+                  className="px-4 py-1.5 rounded-full text-dynamic font-medium cursor-pointer transition-all duration-150"
                   style={{
                     background: active ? C.greenDark : 'transparent',
                     color:      active ? '#fff' : 'var(--text-muted)',
@@ -240,7 +239,7 @@ export default function MedicamentsPage() {
 
         {/* Error */}
         {error && (
-          <div className="px-4 py-3 rounded-lg text-[13px]"
+          <div className="px-4 py-3 rounded-lg text-dynamic"
                style={{ background: C.redSoft, color: C.red, border: `0.5px solid ${C.redBdr}` }}>
             {error}
           </div>
@@ -252,30 +251,30 @@ export default function MedicamentsPage() {
 
           <div className="px-5 py-3.5 shrink-0"
                style={{ borderBottom: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-            <h3 className="text-[13px] font-medium text-[var(--text-primary)]">Répertoire des médicaments</h3>
-            <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{displayed.length} sur {total} médicament(s)</p>
+            <h3 className="text-dynamic font-medium text-[var(--text-primary)]">Répertoire des médicaments</h3>
+            <p className="text-dynamic text-[var(--text-muted)] mt-0.5">{displayed.length} sur {total} médicament(s)</p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <div className="flex items-center justify-center py-20 gap-3 text-[var(--text-muted)] text-[13px]">
+              <div className="flex items-center justify-center py-20 gap-3 text-[var(--text-muted)] text-dynamic">
                 <Loader2 size={20} className="animate-spin" style={{ color: C.green }} />
                 Chargement…
               </div>
             ) : displayed.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-[var(--text-muted)]">
-                <div className="text-[40px] mb-3 opacity-20">💊</div>
-                <p className="text-[14px] font-medium">Aucun médicament trouvé</p>
-                <p className="text-[12px] mt-1">
+                <div className="text-dynamic mb-3 opacity-20">💊</div>
+                <p className="text-dynamic font-medium">Aucun médicament trouvé</p>
+                <p className="text-dynamic mt-1">
                   {search ? `Aucun résultat pour « ${search} »` : 'Cliquez sur « Nouveau médicament » pour commencer'}
                 </p>
               </div>
             ) : (
-              <table className="w-full text-[13px] border-collapse">
+              <table className="w-full text-dynamic border-collapse">
                 <thead>
                   <tr style={{ background: 'var(--bg-sidebar)', borderBottom: '0.5px solid var(--border)', position: 'sticky', top: 0 }}>
                     {['Référence', 'Médicament', 'Forme', 'Dosage', 'Prix', 'Seuil stock', 'Péremption', ...(canEdit ? ['Actions'] : [])].map(h => (
-                      <th key={h} className="px-3.5 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">{h}</th>
+                      <th key={h} className="px-3.5 py-3 text-left text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -286,7 +285,7 @@ export default function MedicamentsPage() {
                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.03)'}
                         onMouseLeave={e => e.currentTarget.style.background = i % 2 !== 0 ? 'var(--bg-hover)' : 'transparent'}>
                       <td className="px-3.5 py-3">
-                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-[5px]"
+                        <span className="text-dynamic font-mono px-2 py-0.5 rounded-[5px]"
                               style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
                           {m.code_cip}
                         </span>
@@ -295,7 +294,7 @@ export default function MedicamentsPage() {
                         <span className="font-medium text-[var(--text-primary)]">{m.nom}</span>
                       </td>
                       <td className="px-3.5 py-3">
-                        <span className="text-[11px] px-2 py-0.5 rounded-full font-medium"
+                        <span className="text-dynamic px-2 py-0.5 rounded-full font-medium"
                               style={{ background: C.greenSoft, color: C.greenDark, border: `0.5px solid ${C.greenBdr}` }}>
                           {m.forme}
                         </span>
@@ -337,12 +336,12 @@ export default function MedicamentsPage() {
 
           <div className="px-5 py-3 flex items-center justify-between shrink-0"
                style={{ borderTop: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-            <span className="text-[11px] text-[var(--text-muted)]">
+            <span className="text-dynamic text-[var(--text-muted)]">
               <span className="font-medium text-[var(--text-primary)]">{displayed.length}</span> médicament(s)
             </span>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.green }} />
-              <span className="text-[11px] text-[var(--text-muted)]">Synchronisé</span>
+              <span className="text-dynamic text-[var(--text-muted)]">Synchronisé</span>
             </div>
           </div>
         </div>
@@ -366,10 +365,10 @@ export default function MedicamentsPage() {
                 <Pill size={18} color={C.green} />
               </div>
               <div>
-                <h2 className="text-[14px] font-medium text-[var(--text-primary)]">
+                <h2 className="text-dynamic font-medium text-[var(--text-primary)]">
                   {isEdit ? `Modifier : ${selected?.nom}` : 'Nouveau médicament'}
                 </h2>
-                <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
                   {isEdit ? 'Édition du médicament' : 'Ajouter un médicament'}
                 </p>
               </div>
@@ -387,7 +386,7 @@ export default function MedicamentsPage() {
 
             <Field label="Code CIP" error={errors.code_cip} icon={<Hash size={13} />}>
               <input
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.code_cip ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="3400935514688"
                 value={form.code_cip}
@@ -400,7 +399,7 @@ export default function MedicamentsPage() {
 
             <Field label="Nom" error={errors.nom} icon={<Tag size={13} />}>
               <input
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.nom ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="Paracétamol 500mg"
                 value={form.nom}
@@ -413,7 +412,7 @@ export default function MedicamentsPage() {
 
             <Field label="Forme" error={errors.forme} icon={<FlaskConical size={13} />}>
               <select
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.forme ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 value={form.forme}
                 onChange={e => set('forme', e.target.value)}
@@ -428,7 +427,7 @@ export default function MedicamentsPage() {
             <Field label="Dosage (mg)" error={errors.dosage} icon={<Gauge size={13} />}>
               <input
                 type="number"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.dosage ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="500"
                 value={form.dosage}
@@ -442,7 +441,7 @@ export default function MedicamentsPage() {
             <Field label="Prix (Ar)" error={errors.prix_unitaire} icon={<Coins size={13} />}>
               <input
                 type="number"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.prix_unitaire ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="250"
                 value={form.prix_unitaire}
@@ -456,7 +455,7 @@ export default function MedicamentsPage() {
             <Field label="Seuil alerte stock" error={errors.seuil_alerte_qte} icon={<BellDot size={13} />}>
               <input
                 type="number"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.seuil_alerte_qte ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="50"
                 value={form.seuil_alerte_qte}
@@ -470,7 +469,7 @@ export default function MedicamentsPage() {
             <Field label="Seuil péremption (jours)" error={errors.seuil_alerte_peremption} icon={<CalendarClock size={13} />}>
               <input
                 type="number"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.seuil_alerte_peremption ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="30"
                 value={form.seuil_alerte_peremption}
@@ -486,14 +485,14 @@ export default function MedicamentsPage() {
               <button
                 type="button"
                 onClick={closeDrawer}
-                className="flex-1 py-2.5 rounded-[8px] text-[13px] font-medium cursor-pointer"
+                className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium cursor-pointer"
                 style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
                 Annuler
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 py-2.5 rounded-[8px] text-[13px] font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                 style={{ background: C.greenDark }}>
                 {saving
                   ? <><Loader2 size={13} className="animate-spin" /> Traitement…</>
@@ -514,22 +513,22 @@ export default function MedicamentsPage() {
                  style={{ background: C.redSoft, border: `0.5px solid ${C.redBdr}` }}>
               <Trash2 size={24} color={C.red} />
             </div>
-            <h3 className="font-medium text-[18px] mb-2 text-[var(--text-primary)]">Supprimer ce médicament ?</h3>
-            <p className="text-[13px] leading-relaxed mb-8 text-[var(--text-muted)]">
+            <h3 className="font-medium text-dynamic mb-2 text-[var(--text-primary)]">Supprimer ce médicament ?</h3>
+            <p className="text-dynamic leading-relaxed mb-8 text-[var(--text-muted)]">
               <strong style={{ color: 'var(--text-primary)' }}>{confirmDel?.nom}</strong> sera définitivement retiré.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDel(null)}
                 disabled={saving}
-                className="flex-1 py-3 rounded-[10px] font-medium text-[13px] cursor-pointer"
+                className="flex-1 py-3 rounded-[10px] font-medium text-dynamic cursor-pointer"
                 style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
                 Annuler
               </button>
               <button
                 onClick={handleDelete}
                 disabled={saving}
-                className="flex-1 py-3 rounded-[10px] font-medium text-[13px] text-white cursor-pointer border-none flex items-center justify-center disabled:opacity-60"
+                className="flex-1 py-3 rounded-[10px] font-medium text-dynamic text-white cursor-pointer border-none flex items-center justify-center disabled:opacity-60"
                 style={{ background: C.red }}>
                 {saving ? <Loader2 size={14} className="animate-spin" /> : 'Supprimer'}
               </button>
@@ -550,8 +549,8 @@ function StatCard({ icon, iconBg, label, value, valueColor }) {
         {icon}
       </div>
       <div>
-        <div className="text-[21px] font-medium leading-none" style={{ color: valueColor }}>{value}</div>
-        <div className="text-[10px] uppercase tracking-wide mt-1 text-[var(--text-muted)]">{label}</div>
+        <div className="text-dynamic font-medium leading-none" style={{ color: valueColor }}>{value}</div>
+        <div className="text-dynamic uppercase tracking-wide mt-1 text-[var(--text-muted)]">{label}</div>
       </div>
     </div>
   );
@@ -560,7 +559,7 @@ function StatCard({ icon, iconBg, label, value, valueColor }) {
 function Field({ label, icon, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">{label}</label>
+      <label className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)]">{label}</label>
       <div className="relative">
         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">{icon}</span>
         {children}
@@ -570,5 +569,5 @@ function Field({ label, icon, children }) {
 }
 
 function Err({ children }) {
-  return <span className="text-[11px]" style={{ color: C.red }}>{children}</span>;
+  return <span className="text-dynamic" style={{ color: C.red }}>{children}</span>;
 }

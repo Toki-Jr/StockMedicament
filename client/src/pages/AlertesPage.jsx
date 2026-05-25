@@ -101,7 +101,6 @@ const getStats = (alertes, nonLues, role) => {
     },
   ];
 
-  // user
   return [
     ...base,
     {
@@ -165,7 +164,6 @@ export default function AlertesPage() {
     { val: 'true',  label: 'Lues'     },
   ];
 
-  /* titre selon rôle */
   const titreRole = {
     admin:      { icon: <ShieldAlert size={20} color={C.green} />, sub: 'Vue administrateur — commandes & stocks' },
     pharmacien: { icon: <Bell size={20} color={C.green} />,        sub: 'Vos alertes stock et retours commandes'  },
@@ -173,12 +171,12 @@ export default function AlertesPage() {
   }[role] ?? { icon: <Bell size={20} color={C.green} />, sub: '' };
 
   return (
-    <div className="flex flex-col gap-5 p-6 min-h-screen">
+    <div className="h-screen flex flex-col gap-5 p-6 overflow-hidden rounded-xl border border-white/[0.05] shadow-2xl">
 
       {/* Toast */}
       {toast && (
         <div
-          className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-[13px] font-medium shadow-lg"
+          className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg"
           style={{ background: toast.type === 'error' ? C.red : C.greenDark }}
         >
           {toast.msg}
@@ -206,7 +204,7 @@ export default function AlertesPage() {
             <h1 className="text-[22px] font-medium tracking-tight leading-tight text-[var(--text-primary)]">
               Mes <span style={{ color: C.green }}>alertes</span>
             </h1>
-            <p className="text-[12px] text-[var(--text-muted)] mt-0.5">{titreRole.sub}</p>
+            <p className="text-dynamic text-[var(--text-muted)] mt-0.5">{titreRole.sub}</p>
           </div>
         </div>
 
@@ -214,7 +212,7 @@ export default function AlertesPage() {
           <button
             onClick={handleToutesLues}
             disabled={saving}
-            className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-[13px] font-medium text-white border-none cursor-pointer disabled:opacity-60"
+            className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white border-none cursor-pointer disabled:opacity-60"
             style={{ background: C.greenDark }}
           >
             {saving
@@ -243,7 +241,7 @@ export default function AlertesPage() {
               <button
                 key={f.val}
                 onClick={() => setFiltre(p => ({ ...p, type_alerte: f.val }))}
-                className="px-3.5 py-1.5 rounded-full text-[12px] font-medium cursor-pointer border-none transition-all duration-150"
+                className="px-3.5 py-1.5 rounded-full text-dynamic font-medium cursor-pointer border-none transition-all duration-150"
                 style={{
                   background: active ? C.greenDark : 'transparent',
                   color:      active ? '#fff' : 'var(--text-muted)',
@@ -267,7 +265,7 @@ export default function AlertesPage() {
               <button
                 key={f.val}
                 onClick={() => setFiltre(p => ({ ...p, lu: f.val }))}
-                className="px-3.5 py-1.5 rounded-full text-[12px] font-medium cursor-pointer border-none transition-all duration-150"
+                className="px-3.5 py-1.5 rounded-full text-dynamic font-medium cursor-pointer border-none transition-all duration-150"
                 style={{
                   background: active ? C.greenDark : 'transparent',
                   color:      active ? '#fff' : 'var(--text-muted)',
@@ -284,7 +282,7 @@ export default function AlertesPage() {
       {/* ── Error ── */}
       {error && (
         <div
-          className="px-4 py-3 rounded-lg text-[13px]"
+          className="px-4 py-3 rounded-lg text-dynamic"
           style={{ background: C.redSoft, color: C.red, border: `0.5px solid ${C.redBdr}` }}
         >
           {error}
@@ -293,7 +291,7 @@ export default function AlertesPage() {
 
       {/* ── Liste ── */}
       {loading ? (
-        <div className="text-center py-20 text-[13px] italic text-[var(--text-muted)]">
+        <div className="text-center py-20 text-dynamic italic text-[var(--text-muted)]">
           Chargement des alertes…
         </div>
       ) : alertes.length === 0 ? (
@@ -302,8 +300,8 @@ export default function AlertesPage() {
           style={{ border: '0.5px solid var(--border)' }}
         >
           <div className="text-[40px] mb-3 opacity-20">🔕</div>
-          <p className="font-medium text-[14px] text-[var(--text-primary)]">Aucune alerte</p>
-          <p className="text-[12px] mt-1 text-[var(--text-muted)]">Tout est sous contrôle !</p>
+          <p className="font-medium text-dynamic text-[var(--text-primary)]">Aucune alerte</p>
+          <p className="text-dynamic mt-1 text-[var(--text-muted)]">Tout est sous contrôle !</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
@@ -334,14 +332,14 @@ export default function AlertesPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
                     <span
-                      className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                      className="text-dynamic font-medium px-2 py-0.5 rounded-full"
                       style={{ background: meta.bg, color: meta.color, border: `0.5px solid ${meta.bdr}` }}
                     >
                       {meta.label}
                     </span>
                     {!alerte.lu && (
                       <span
-                        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                        className="text-dynamic font-medium px-2 py-0.5 rounded-full"
                         style={{ background: C.redSoft, color: C.red, border: `0.5px solid ${C.redBdr}` }}
                       >
                         Nouveau
@@ -349,17 +347,17 @@ export default function AlertesPage() {
                     )}
                     {alerte.medicament?.nom && (
                       <span
-                        className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-[5px]"
+                        className="text-dynamic font-mono font-medium px-2 py-0.5 rounded-[5px]"
                         style={{ background: C.greenSoft, color: C.greenDark, border: `0.5px solid ${C.greenBdr}` }}
                       >
                         {alerte.medicament.nom}
                       </span>
                     )}
                   </div>
-                  <p className="text-[13px] leading-relaxed mb-1 text-[var(--text-primary)]">
+                  <p className="text-dynamic leading-relaxed mb-1 text-[var(--text-primary)]">
                     {alerte.message}
                   </p>
-                  <p className="text-[11px] text-[var(--text-muted)]">
+                  <p className="text-dynamic text-[var(--text-muted)]">
                     {new Date(alerte.createdAt).toLocaleDateString('fr-FR', {
                       day: '2-digit', month: 'long', year: 'numeric',
                       hour: '2-digit', minute: '2-digit',
@@ -372,23 +370,22 @@ export default function AlertesPage() {
                   {!alerte.lu && (
                     <button
                       onClick={() => handleMarquerLu(alerte.id_alerte)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-[11px] font-medium cursor-pointer border-none"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-dynamic font-medium cursor-pointer border-none"
                       style={{ background: C.greenSoft, color: C.greenDark, border: `0.5px solid ${C.greenBdr}` }}
                     >
                       <Check size={12} /> Lu
                     </button>
                   )}
-                  {/* Seul l'admin peut supprimer */}
-                  {isAdmin && (
-                    <button
-                      onClick={() => handleDelete(alerte.id_alerte)}
-                      className="w-[30px] h-[30px] flex items-center justify-center rounded-[7px] cursor-pointer border-none"
-                      style={{ background: C.redSoft, border: `0.5px solid ${C.redBdr}` }}
-                      title="Supprimer"
-                    >
-                      <Trash2 size={13} color={C.red} />
-                    </button>
-                  )}
+                  
+                  <button
+                    onClick={() => handleDelete(alerte.id_alerte)}
+                    className="w-[30px] h-[30px] flex items-center justify-center rounded-[7px] cursor-pointer border-none"
+                    style={{ background: C.redSoft, border: `0.5px solid ${C.redBdr}` }}
+                    title="Supprimer"
+                  >
+                    <Trash2 size={13} color={C.red} />
+                  </button>
+                  
                 </div>
               </div>
             );
@@ -416,7 +413,7 @@ function StatCard({ icon, iconBg, label, value, valueColor }) {
         <div className="text-[21px] font-medium leading-none" style={{ color: valueColor }}>
           {value}
         </div>
-        <div className="text-[10px] uppercase tracking-wide mt-1 text-[var(--text-muted)]">
+        <div className="text-dynamic uppercase tracking-wide mt-1 text-[var(--text-muted)]">
           {label}
         </div>
       </div>

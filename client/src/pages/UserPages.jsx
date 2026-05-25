@@ -125,7 +125,7 @@ export default function Utilisateurs() {
   const userCount       = users.filter(u => u.role === "user").length
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="h-screen flex overflow-hidden rounded-xl border border-white/[0.05] shadow-2xl">
 
       {/* ── Toast ── */}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2">

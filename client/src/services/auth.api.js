@@ -20,6 +20,8 @@ export const getUsers = async () => {
 export const updateUsers  = async({id, data}) =>
   api.put(`/auth/users/${id}`, data).then(r => r.data.data);
   
+export const updatePassword = async({id, data}) => 
+  api.put(`/auth/change-password/${id}`, data).then(r => r.data);
 
 export const updateMedicament = (id, data) =>
   api.put(`/medicaments/${id}`, data).then(r => r.data.data);

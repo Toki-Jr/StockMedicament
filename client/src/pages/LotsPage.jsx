@@ -153,11 +153,11 @@ export default function LotsPage() {
   const stockTotal   = lots.reduce((a, l) => a + (l.quantite_entre - l.quantite_sortie), 0);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="h-screen flex overflow-hidden rounded-xl border border-white/[0.05] shadow-2xl">
 
       {/* Toast */}
       {toast && (
-        <div className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-[13px] font-medium shadow-lg"
+        <div className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg"
              style={{ background: toast.type === 'error' ? C.red : C.greenDark }}>
           {toast.msg}
         </div>
@@ -177,7 +177,7 @@ export default function LotsPage() {
               <h1 className="text-[22px] font-medium tracking-tight leading-tight text-[var(--text-primary)]">
                 Liste des <span style={{ color: C.green }}>lots</span>
               </h1>
-              <p className="text-[12px] text-[var(--text-muted)] mt-0.5">
+              <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
                 {lots.length} lot(s) enregistré(s)
               </p>
             </div>
@@ -185,7 +185,7 @@ export default function LotsPage() {
           {canEdit && !drawerOpen && (
             <button
               onClick={openCreate}
-              className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-[13px] font-medium text-white border-none cursor-pointer"
+              className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white border-none cursor-pointer"
               style={{ background: C.greenDark }}>
               <Plus size={15} /> Nouveau lot
             </button>
@@ -202,7 +202,7 @@ export default function LotsPage() {
 
         {/* Error */}
         {error && (
-          <div className="px-4 py-3 rounded-lg text-[13px]"
+          <div className="px-4 py-3 rounded-lg text-dynamic"
                style={{ background: C.redSoft, color: C.red, border: `0.5px solid ${C.redBdr}` }}>
             {error}
           </div>
@@ -215,27 +215,27 @@ export default function LotsPage() {
           {/* Table header */}
           <div className="px-5 py-3.5 shrink-0"
                style={{ borderBottom: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-            <h3 className="text-[13px] font-medium text-[var(--text-primary)]">Répertoire des lots</h3>
-            <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{lots.length} lot(s) enregistré(s)</p>
+            <h3 className="text-dynamic font-medium text-[var(--text-primary)]">Répertoire des lots</h3>
+            <p className="text-dynamic text-[var(--text-muted)] mt-0.5">{lots.length} lot(s) enregistré(s)</p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <div className="flex items-center justify-center py-20 gap-3 text-[var(--text-muted)] text-[13px]">
+              <div className="flex items-center justify-center py-20 gap-3 text-[var(--text-muted)] text-dynamic">
                 <Loader2 size={20} className="animate-spin" style={{ color: C.green }} />
                 Chargement des lots…
               </div>
             ) : lots.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-[var(--text-muted)]">
-                <div className="text-[40px] mb-3 opacity-20">📦</div>
-                <p className="text-[14px] font-medium">Aucun lot en stock</p>
+                <div className="text-dynamic mb-3 opacity-20">📦</div>
+                <p className="text-dynamic font-medium">Aucun lot en stock</p>
               </div>
             ) : (
-              <table className="w-full text-left text-[13px] border-collapse">
+              <table className="w-full text-left text-dynamic border-collapse">
                 <thead>
                   <tr style={{ background: 'var(--bg-sidebar)', borderBottom: '0.5px solid var(--border)', position: 'sticky', top: 0 }}>
                     {['Numéro lot', 'Médicament', 'Fabrication', 'Expiration', 'Entrée', 'Sortie', 'Restant', 'Actions'].map(h => (
-                      <th key={h} className="px-3.5 py-3 text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">{h}</th>
+                      <th key={h} className="px-3.5 py-3 text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -247,21 +247,21 @@ export default function LotsPage() {
                       <tr key={lot.id_lot}
                           style={{ borderTop: '0.5px solid var(--border)', background: i % 2 !== 0 ? 'var(--bg-hover)' : 'transparent' }}>
                         <td className="px-3.5 py-3">
-                          <code className="text-[12px] px-2 py-0.5 rounded-[5px] font-mono font-medium"
+                          <code className="text-dynamic px-2 py-0.5 rounded-[5px] font-mono font-medium"
                                 style={{ background: C.greenSoft, color: C.green, border: `0.5px solid ${C.greenBdr}` }}>
                             {lot.numero_lot}
                           </code>
                         </td>
                         <td className="px-3.5 py-3 font-medium text-[var(--text-primary)]">{lot.medicament?.nom ?? '—'}</td>
-                        <td className="px-3.5 py-3 text-[12px] text-[var(--text-muted)]">
+                        <td className="px-3.5 py-3 text-dynamic text-[var(--text-muted)]">
                           {new Date(lot.date_fabrication).toLocaleDateString('fr-FR')}
                         </td>
                         <td className="px-3.5 py-3">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[12px] text-[var(--text-muted)]">
+                            <span className="text-dynamic text-[var(--text-muted)]">
                               {new Date(lot.date_expiration).toLocaleDateString('fr-FR')}
                             </span>
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                            <span className="text-dynamic font-medium px-2 py-0.5 rounded-full"
                                   style={{ background: exp.bg, color: exp.color, border: `0.5px solid ${exp.bdr}` }}>
                               {exp.label}
                             </span>
@@ -269,7 +269,7 @@ export default function LotsPage() {
                         </td>
                         <td className="px-3.5 py-3 font-medium" style={{ color: C.green }}>+{lot.quantite_entre}</td>
                         <td className="px-3.5 py-3 font-medium" style={{ color: C.orange }}>-{lot.quantite_sortie}</td>
-                        <td className="px-3.5 py-3 text-[15px] font-medium font-mono"
+                        <td className="text-dynamic font-medium font-mono"
                             style={{ color: restant <= 0 ? C.red : 'var(--text-primary)' }}>
                           {restant}
                         </td>
@@ -306,12 +306,12 @@ export default function LotsPage() {
           {/* Table footer */}
           <div className="px-5 py-3 flex items-center justify-between shrink-0"
                style={{ borderTop: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-            <span className="text-[11px] text-[var(--text-muted)]">
+            <span className="text-dynamic text-[var(--text-muted)]">
               <span className="font-medium text-[var(--text-primary)]">{lots.length}</span> lot(s) au total
             </span>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.green }} />
-              <span className="text-[11px] text-[var(--text-muted)]">Synchronisé</span>
+              <span className="text-dynamic text-[var(--text-muted)]">Synchronisé</span>
             </div>
           </div>
         </div>
@@ -335,10 +335,10 @@ export default function LotsPage() {
                 <Package size={18} color={C.green} />
               </div>
               <div>
-                <h2 className="text-[14px] font-medium text-[var(--text-primary)]">
+                <h2 className="text-dynamic font-medium text-[var(--text-primary)]">
                   {isEdit ? `Modifier : ${selected?.numero_lot}` : 'Nouveau lot'}
                 </h2>
-                <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
                   {isEdit ? 'Édition du lot' : 'Créer un nouveau lot'}
                 </p>
               </div>
@@ -357,7 +357,7 @@ export default function LotsPage() {
             {/* Médicament */}
             <Field label="Médicament" error={errors.id_medoc} icon={<FlaskConical size={13} />}>
               <select
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.id_medoc ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 value={form.id_medoc}
                 onChange={e => set('id_medoc', e.target.value)}
@@ -369,13 +369,13 @@ export default function LotsPage() {
                   <option key={m.id_medoc} value={m.id_medoc}>{m.nom} ({m.forme})</option>
                 ))}
               </select>
-              {errors.id_medoc && <span className="text-[11px]" style={{ color: C.red }}>{errors.id_medoc}</span>}
+              {errors.id_medoc && <span className="text-dynamic" style={{ color: C.red }}>{errors.id_medoc}</span>}
             </Field>
 
             {/* Numéro lot */}
             <Field label="Numéro de lot" error={errors.numero_lot} icon={<Hash size={13} />}>
               <input
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.numero_lot ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="LOT-2024-001"
                 value={form.numero_lot}
@@ -383,41 +383,41 @@ export default function LotsPage() {
                 onFocus={e => e.target.style.borderColor = C.green}
                 onBlur={e  => e.target.style.borderColor = errors.numero_lot ? C.red : 'var(--border)'}
               />
-              {errors.numero_lot && <span className="text-[11px]" style={{ color: C.red }}>{errors.numero_lot}</span>}
+              {errors.numero_lot && <span className="text-dynamic" style={{ color: C.red }}>{errors.numero_lot}</span>}
             </Field>
 
             {/* Dates */}
             <Field label="Date de fabrication" error={errors.date_fabrication} icon={<Calendar size={13} />}>
               <input
                 type="date"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.date_fabrication ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 value={form.date_fabrication}
                 onChange={e => set('date_fabrication', e.target.value)}
                 onFocus={e => e.target.style.borderColor = C.green}
                 onBlur={e  => e.target.style.borderColor = errors.date_fabrication ? C.red : 'var(--border)'}
               />
-              {errors.date_fabrication && <span className="text-[11px]" style={{ color: C.red }}>{errors.date_fabrication}</span>}
+              {errors.date_fabrication && <span className="text-dynamic" style={{ color: C.red }}>{errors.date_fabrication}</span>}
             </Field>
 
             <Field label="Date d'expiration" error={errors.date_expiration} icon={<Calendar size={13} />}>
               <input
                 type="date"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.date_expiration ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 value={form.date_expiration}
                 onChange={e => set('date_expiration', e.target.value)}
                 onFocus={e => e.target.style.borderColor = C.green}
                 onBlur={e  => e.target.style.borderColor = errors.date_expiration ? C.red : 'var(--border)'}
               />
-              {errors.date_expiration && <span className="text-[11px]" style={{ color: C.red }}>{errors.date_expiration}</span>}
+              {errors.date_expiration && <span className="text-dynamic" style={{ color: C.red }}>{errors.date_expiration}</span>}
             </Field>
 
             {/* Quantités */}
             <Field label="Quantité entrée" error={errors.quantite_entre} icon={<Plus size={13} />}>
               <input
                 type="number" min="1"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.quantite_entre ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="500"
                 value={form.quantite_entre}
@@ -425,13 +425,13 @@ export default function LotsPage() {
                 onFocus={e => e.target.style.borderColor = C.green}
                 onBlur={e  => e.target.style.borderColor = errors.quantite_entre ? C.red : 'var(--border)'}
               />
-              {errors.quantite_entre && <span className="text-[11px]" style={{ color: C.red }}>{errors.quantite_entre}</span>}
+              {errors.quantite_entre && <span className="text-dynamic" style={{ color: C.red }}>{errors.quantite_entre}</span>}
             </Field>
 
             <Field label="Quantité sortie" error={errors.quantite_sortie} icon={<Plus size={13} />}>
               <input
                 type="number" min="0"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.quantite_sortie ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="0"
                 value={form.quantite_sortie}
@@ -446,14 +446,14 @@ export default function LotsPage() {
               <button
                 type="button"
                 onClick={closeDrawer}
-                className="flex-1 py-2.5 rounded-[8px] text-[13px] font-medium cursor-pointer"
+                className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium cursor-pointer"
                 style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
                 Annuler
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 py-2.5 rounded-[8px] text-[13px] font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                 style={{ background: C.greenDark }}>
                 {saving
                   ? <><Loader2 size={13} className="animate-spin" /> Traitement…</>
@@ -474,22 +474,22 @@ export default function LotsPage() {
                  style={{ background: C.redSoft, border: `0.5px solid ${C.redBdr}` }}>
               <Trash2 size={24} color={C.red} />
             </div>
-            <h3 className="font-medium text-[18px] mb-2 text-[var(--text-primary)]">Supprimer ce lot ?</h3>
-            <p className="text-[13px] leading-relaxed mb-8 text-[var(--text-muted)]">
+            <h3 className="font-medium text-dynamic mb-2 text-[var(--text-primary)]">Supprimer ce lot ?</h3>
+            <p className="text-dynamic leading-relaxed mb-8 text-[var(--text-muted)]">
               Le lot <strong style={{ color: 'var(--text-primary)' }}>#{confirmDel?.numero_lot}</strong> sera définitivement supprimé.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDel(null)}
                 disabled={saving}
-                className="flex-1 py-3 rounded-[10px] font-medium text-[13px] cursor-pointer"
+                className="flex-1 py-3 rounded-[10px] font-medium text-dynamic cursor-pointer"
                 style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
                 Annuler
               </button>
               <button
                 onClick={handleDelete}
                 disabled={saving}
-                className="flex-1 py-3 rounded-[10px] font-medium text-[13px] text-white cursor-pointer border-none flex items-center justify-center disabled:opacity-60"
+                className="flex-1 py-3 rounded-[10px] font-medium text-dynamic text-white cursor-pointer border-none flex items-center justify-center disabled:opacity-60"
                 style={{ background: C.red }}>
                 {saving
                   ? <Loader2 size={14} className="animate-spin" />
@@ -512,8 +512,8 @@ function StatCard({ icon, iconBg, label, value, valueColor }) {
         {icon}
       </div>
       <div>
-        <div className="text-[21px] font-medium leading-none" style={{ color: valueColor }}>{value}</div>
-        <div className="text-[10px] uppercase tracking-wide mt-1 text-[var(--text-muted)]">{label}</div>
+        <div className="text-dynamic font-medium leading-none" style={{ color: valueColor }}>{value}</div>
+        <div className="text-dynamic uppercase tracking-wide mt-1 text-[var(--text-muted)]">{label}</div>
       </div>
     </div>
   );
@@ -522,7 +522,7 @@ function StatCard({ icon, iconBg, label, value, valueColor }) {
 function Field({ label, icon, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">{label}</label>
+      <label className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)]">{label}</label>
       <div className="relative">
         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">{icon}</span>
         {children}

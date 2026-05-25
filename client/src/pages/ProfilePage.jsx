@@ -2,10 +2,9 @@ import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { updateMe, deleteMe } from '../services/profile.api';
 import { User, Mail, LogOut, Trash2, Camera, Save, X, Loader2, Eye, EyeOff } from 'lucide-react';
-// import ThemeToggle
 
 export default function ProfilePage() {
-  const { user, logout, login, updateUser } = useAuth();
+  const { user, logout, updateUser } = useAuth();
 
   const [form, setForm] = useState({
     nom:      user?.nom    ?? '',
@@ -80,17 +79,17 @@ export default function ProfilePage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-[13px] font-medium shadow-lg flex items-center gap-2"
+        <div className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg flex items-center gap-2"
              style={{ background: toast.type === 'error' ? '#dc2626' : '#16a34a' }}>
           {toast.msg}
-          <button onClick={() => setToast(null)}><X size={14} /></button>
+          <button onClick={() => setToast(null)} className="border-none bg-transparent cursor-pointer p-0 flex items-center"><X size={14} /></button>
         </div>
       )}
 
       {/* ── Header ── */}
       <div>
-        <h1 className="text-[22px] font-medium text-[var(--text-primary)]">Mon profil</h1>
-        <p className="text-[12px] text-[var(--text-muted)] mt-0.5">
+        <h1 className="text-dynamic font-medium text-[var(--text-primary)]">Mon profil</h1>
+        <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
           Gérez vos informations personnelles
         </p>
       </div>
@@ -104,7 +103,7 @@ export default function ProfilePage() {
                  className="w-24 h-24 rounded-full object-cover"
                  style={{ border: '3px solid #16a34a' }} />
           ) : (
-            <div className="w-24 h-24 rounded-full flex items-center justify-center text-[28px] font-bold text-white"
+            <div className="w-24 h-24 rounded-full flex items-center justify-center text-dynamic font-bold text-white"
                  style={{ background: 'linear-gradient(135deg, #16a34a, #4ade80)' }}>
               {initials}
             </div>
@@ -120,10 +119,10 @@ export default function ProfilePage() {
         </div>
 
         <div className="text-center">
-          <p className="text-[15px] font-medium text-[var(--text-primary)]">
+          <p className="text-dynamic font-medium text-[var(--text-primary)]">
             {user?.nom} {user?.prenom}
           </p>
-          <span className="text-[11px] px-2.5 py-0.5 rounded-full font-medium"
+          <span className="text-dynamic px-2.5 py-0.5 rounded-full font-medium"
                 style={{ background: 'rgba(22,163,74,0.12)', color: '#16a34a' }}>
             {user?.role}
           </span>
@@ -133,14 +132,14 @@ export default function ProfilePage() {
       {/* ── Formulaire ── */}
       <div className="flex flex-col gap-4 p-5 rounded-2xl"
            style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}>
-        <p className="text-[12px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+        <p className="text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">
           Informations personnelles
         </p>
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Nom">
             <input
-              className="w-full px-3 py-2.5 rounded-lg text-[13px] outline-none"
+              className="w-full px-3 py-2.5 rounded-lg text-dynamic outline-none"
               style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)', color: 'var(--text-primary)' }}
               value={form.nom}
               onChange={e => setForm(p => ({ ...p, nom: e.target.value }))}
@@ -148,7 +147,7 @@ export default function ProfilePage() {
           </Field>
           <Field label="Prénom">
             <input
-              className="w-full px-3 py-2.5 rounded-lg text-[13px] outline-none"
+              className="w-full px-3 py-2.5 rounded-lg text-dynamic outline-none"
               style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)', color: 'var(--text-primary)' }}
               value={form.prenom}
               onChange={e => setForm(p => ({ ...p, prenom: e.target.value }))}
@@ -161,7 +160,7 @@ export default function ProfilePage() {
             <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2" color="var(--text-muted)" />
             <input
               type="email"
-              className="w-full pl-8 pr-3 py-2.5 rounded-lg text-[13px] outline-none"
+              className="w-full pl-8 pr-3 py-2.5 rounded-lg text-dynamic outline-none"
               style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)', color: 'var(--text-primary)' }}
               value={form.email}
               onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
@@ -173,7 +172,7 @@ export default function ProfilePage() {
           <div className="relative">
             <input
               type={showPass ? 'text' : 'password'}
-              className="w-full px-3 pr-9 py-2.5 rounded-lg text-[13px] outline-none"
+              className="w-full px-3 pr-9 py-2.5 rounded-lg text-dynamic outline-none"
               style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)', color: 'var(--text-primary)' }}
               placeholder="Laisser vide pour ne pas changer"
               value={form.password}
@@ -181,7 +180,7 @@ export default function ProfilePage() {
             />
             <button
               onClick={() => setShowPass(p => !p)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-transparent cursor-pointer">
+              className="absolute right-3 top-1/2 -translate-y-1/2 border-none bg-transparent cursor-pointer flex items-center">
               {showPass ? <EyeOff size={14} color="var(--text-muted)" /> : <Eye size={14} color="var(--text-muted)" />}
             </button>
           </div>
@@ -190,7 +189,7 @@ export default function ProfilePage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-[13px] font-medium text-white border-none cursor-pointer disabled:opacity-60"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer disabled:opacity-60"
           style={{ background: '#16a34a' }}>
           {saving ? <><Loader2 size={14} className="animate-spin" /> Sauvegarde…</> : <><Save size={14} /> Sauvegarder</>}
         </button>
@@ -200,8 +199,8 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between px-5 py-4 rounded-2xl"
            style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}>
         <div>
-          <p className="text-[13px] font-medium text-[var(--text-primary)]">Apparence</p>
-          <p className="text-[11px] text-[var(--text-muted)] mt-0.5">Basculer entre le mode clair et sombre</p>
+          <p className="text-dynamic font-medium text-[var(--text-primary)]">Apparence</p>
+          <p className="text-dynamic text-[var(--text-muted)] mt-0.5">Basculer entre le mode clair et sombre</p>
         </div>
         {/* <ThemeToggle /> */}
       </div>
@@ -209,20 +208,20 @@ export default function ProfilePage() {
       {/* ── Actions danger ── */}
       <div className="flex flex-col gap-3 p-5 rounded-2xl"
            style={{ background: 'rgba(220,38,38,0.04)', border: '0.5px solid rgba(220,38,38,0.2)' }}>
-        <p className="text-[12px] font-medium uppercase tracking-wider" style={{ color: '#dc2626' }}>
+        <p className="text-dynamic font-medium uppercase tracking-wider" style={{ color: '#dc2626' }}>
           Zone de danger
         </p>
 
         <button
           onClick={logout}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium cursor-pointer border-none w-full"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-dynamic font-medium cursor-pointer border-none w-full"
           style={{ background: 'rgba(220,38,38,0.08)', color: '#dc2626', border: '0.5px solid rgba(220,38,38,0.2)' }}>
           <LogOut size={14} /> Se déconnecter
         </button>
 
         <button
           onClick={() => setConfirmDel(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium cursor-pointer border-none w-full"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-dynamic font-medium cursor-pointer border-none w-full"
           style={{ background: '#dc2626', color: 'white' }}>
           <Trash2 size={14} /> Supprimer mon compte
         </button>
@@ -235,7 +234,7 @@ export default function ProfilePage() {
                style={{ border: '0.5px solid var(--border)' }}>
             <div className="flex items-center justify-between px-5 py-4"
                  style={{ borderBottom: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-              <h2 className="text-[14px] font-medium text-[var(--text-primary)]">Supprimer le compte</h2>
+              <h2 className="text-dynamic font-medium text-[var(--text-primary)]">Supprimer le compte</h2>
               <button onClick={() => setConfirmDel(false)}
                       className="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer border-none"
                       style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)' }}>
@@ -244,22 +243,22 @@ export default function ProfilePage() {
             </div>
             <div className="p-5 text-center">
               <Trash2 size={40} color="#dc2626" className="mx-auto mb-3" />
-              <p className="text-[14px] text-[var(--text-primary)]">
+              <p className="text-dynamic text-[var(--text-primary)]">
                 Supprimer définitivement votre compte ?
               </p>
-              <p className="text-[12px] text-[var(--text-muted)] mt-1">
+              <p className="text-dynamic text-[var(--text-muted)] mt-1">
                 Toutes vos données seront perdues.
               </p>
             </div>
             <div className="px-5 py-4 flex gap-2.5 justify-end"
                  style={{ borderTop: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
               <button onClick={() => setConfirmDel(false)}
-                      className="px-4 py-2 rounded-lg text-[13px] font-medium cursor-pointer"
+                      className="px-4 py-2 rounded-lg text-dynamic font-medium cursor-pointer"
                       style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
                 Annuler
               </button>
               <button onClick={handleDeleteAccount}
-                      className="px-4 py-2 rounded-lg text-[13px] font-medium text-white border-none cursor-pointer"
+                      className="px-4 py-2 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer"
                       style={{ background: '#dc2626' }}>
                 Confirmer
               </button>
@@ -271,10 +270,11 @@ export default function ProfilePage() {
   );
 }
 
+// Composant réutilisable local
 function Field({ label, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
+      <label className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)]">
         {label}
       </label>
       {children}

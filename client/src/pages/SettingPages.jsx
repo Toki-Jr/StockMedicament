@@ -1,32 +1,39 @@
 import { useState } from 'react';
-import { Key, Eye, EyeOff, Save, Loader2, X, ChevronDown, ChevronUp, HelpCircle, SunMoon } from 'lucide-react';
-import ThemeToggle from '../components/shared/ThemeToggle'; // Ajuste le chemin d'import selon ton projet
+import { Key, Eye, EyeOff, Type, Save, Loader2, X, ChevronDown, ChevronUp, HelpCircle, SunMoon } from 'lucide-react';
+import ThemeToggle from '../components/shared/ThemeToggle';
+import { useFontSize } from '../hooks/useFontSize';
+import { useAuth } from '../context/AuthContext';
 
 export default function SettingsPage() {
-  // États pour la modification du mot de passe
+
+  const { updatePassword } = useAuth();
   const [form, setForm] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
-  
+  const [ fontSize, setFontSize ] = useFontSize();
   const [saving, setSaving] = useState(false);
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   
-  // État du guide (accordéon) : stocke l'ID du guide ouvert
   const [openGuide, setOpenGuide] = useState(null);
   
-  // Toast notifications
   const [toast, setToast] = useState(null);
 
+  const fontPresets = [
+    { label: 'Petite', value: 12 },
+    { label: 'Normale', value: 14 },
+    { label: 'Grande', value: 16 },
+    { label: 'Très grande', value: 18 },
+  ];
+  
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3500);
   };
 
-  // Liste des questions/réponses du guide d'utilisation
   const guideItems = [
     {
       id: 'first-steps',
@@ -45,31 +52,32 @@ export default function SettingsPage() {
     }
   ];
 
-  // Action de modification du mot de passe
   const handleSavePassword = async (e) => {
     e.preventDefault();
+
     if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
-      showToast('Veuillez remplir tous les champs', 'error');
-      return;
+      return showToast('Veuillez remplir tous les champs', 'error');
     }
     if (form.newPassword !== form.confirmPassword) {
-      showToast('Les nouveaux mots de passe ne correspondent pas', 'error');
-      return;
+      return showToast('Les nouveaux mots de passe ne correspondent pas', 'error');
     }
     if (form.newPassword.length < 8) {
-      showToast('Le mot de passe doit contenir au moins 8 caractères', 'error');
-      return;
+      return showToast('Le mot de passe doit contenir au moins 8 caractères', 'error');
     }
 
     setSaving(true);
     try {
-      // Simuler l'appel API de mise à jour du mot de passe
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      showToast('Mot de passe mis à jour avec succès');
+      const { message } = await updatePassword({
+        currentPassword: form.currentPassword,
+        newPassword:     form.newPassword,
+      });
+
+      showToast(message || 'Mot de passe mis à jour avec succès');
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
-      showToast(error.message || 'Une erreur est survenue', 'error');
+
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Une erreur est survenue';
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -84,7 +92,7 @@ export default function SettingsPage() {
       
       {/* Toast de notification */}
       {toast && (
-        <div className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-[13px] font-medium shadow-lg flex items-center gap-2"
+        <div className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg flex items-center gap-2"
              style={{ background: toast.type === 'error' ? '#dc2626' : '#16a34a' }}>
           {toast.msg}
           <button onClick={() => setToast(null)} className="cursor-pointer bg-transparent border-none text-white flex items-center">
@@ -96,7 +104,7 @@ export default function SettingsPage() {
       {/* ── Header ── */}
       <div>
         <h1 className="text-[22px] font-medium text-[var(--text-primary)]">Paramètres</h1>
-        <p className="text-[12px] text-[var(--text-muted)] mt-0.5">
+        <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
           Personnalisez votre interface et configurez vos options de sécurité
         </p>
       </div>
@@ -104,17 +112,75 @@ export default function SettingsPage() {
       {/* ── Section : Apparence ── */}
       <div className="flex flex-col gap-4 p-5 rounded-2xl"
            style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}>
-        <div className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="flex items-center gap-2 text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">
           <SunMoon size={14} />
           <span>Apparence</span>
         </div>
         
         <div className="flex items-center justify-between py-2">
           <div>
-            <p className="text-[13px] font-medium text-[var(--text-primary)]">Thème visuel</p>
-            <p className="text-[11px] text-[var(--text-muted)] mt-0.5">Choisissez entre un thème clair ou sombre</p>
+            <p className="text-dynamic font-medium text-[var(--text-primary)]">Thème visuel</p>
+            <p className="text-dynamic text-[var(--text-muted)] mt-0.5">Choisissez entre un thème clair ou sombre</p>
           </div>
           <ThemeToggle />
+        </div>
+      </div>
+
+      {/* ── Section : Typographie ── */}
+      <div className="flex flex-col gap-4 p-5 rounded-2xl"
+          style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}>
+
+        <div className="flex items-center gap-2 text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">
+          <Type size={14} />
+          <span>Typographie</span>
+        </div>
+
+        <div className="flex items-center justify-between py-2">
+          <div>
+            <p className="text-dynamic font-medium text-[var(--text-primary)]">Taille de police</p>
+            <p className="text-dynamic text-[var(--text-muted)] mt-0.5">Ajustez la taille du texte dans l'interface</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-dynamic text-[var(--text-muted)]">A</span>
+            <input
+              type="range" min="12" max="20" step="1"
+              value={fontSize}
+              onChange={e => setFontSize(Number(e.target.value))}
+              className="w-24 accent-green-600"
+            />
+            <span className="text-[17px] text-[var(--text-muted)]">A</span>
+            <span className="text-dynamic font-medium text-[var(--text-primary)] w-8 text-right">
+              {fontSize}px
+            </span>
+          </div>
+        </div>
+
+        {/* Aperçu */}
+        <div className="rounded-lg p-3"
+            style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)' }}>
+          <p className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)] mb-2">Aperçu</p>
+          <p className="text-dynamic leading-relaxed text-[var(--text-primary)]">
+            Voici un exemple de texte avec la taille sélectionnée.
+          </p>
+        </div>
+
+        {/* Presets rapides */}
+        <div className="grid grid-cols-4 gap-2">
+          {fontPresets.map(({ label, value }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setFontSize(value)}
+              className="py-1.5 rounded-lg text-dynamic border transition-colors"
+              style={{
+                background: fontSize === value ? 'rgba(22,163,74,0.1)' : 'var(--bg-content)',
+                border: fontSize === value ? '0.5px solid #16a34a' : '0.5px solid var(--border)',
+                color: fontSize === value ? '#16a34a' : 'var(--text-muted)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -122,7 +188,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-4 p-5 rounded-2xl"
            style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}>
         
-        <div className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="flex items-center gap-2 text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">
           <Key size={14} />
           <span>Sécurité du compte</span>
         </div>
@@ -133,7 +199,7 @@ export default function SettingsPage() {
             <div className="relative">
               <input
                 type={showCurrentPass ? 'text' : 'password'}
-                className="w-full px-3 pr-9 py-2.5 rounded-lg text-[13px] outline-none"
+                className="w-full px-3 pr-9 py-2.5 rounded-lg text-dynamic outline-none"
                 style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)', color: 'var(--text-primary)' }}
                 placeholder="Saisissez votre mot de passe actuel"
                 value={form.currentPassword}
@@ -153,7 +219,7 @@ export default function SettingsPage() {
               <div className="relative">
                 <input
                   type={showNewPass ? 'text' : 'password'}
-                  className="w-full px-3 pr-9 py-2.5 rounded-lg text-[13px] outline-none"
+                  className="w-full px-3 pr-9 py-2.5 rounded-lg text-dynamic outline-none"
                   style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)', color: 'var(--text-primary)' }}
                   placeholder="Min. 8 caractères"
                   value={form.newPassword}
@@ -172,7 +238,7 @@ export default function SettingsPage() {
               <div className="relative">
                 <input
                   type={showConfirmPass ? 'text' : 'password'}
-                  className="w-full px-3 pr-9 py-2.5 rounded-lg text-[13px] outline-none"
+                  className="w-full px-3 pr-9 py-2.5 rounded-lg text-dynamic outline-none"
                   style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)', color: 'var(--text-primary)' }}
                   placeholder="Saisissez-le à nouveau"
                   value={form.confirmPassword}
@@ -191,7 +257,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-[13px] font-medium text-white border-none cursor-pointer disabled:opacity-60 mt-2"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer disabled:opacity-60 mt-2"
             style={{ background: '#16a34a' }}>
             {saving ? (
               <><Loader2 size={14} className="animate-spin" /> Mise à jour…</>
@@ -207,7 +273,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-4 p-5 rounded-2xl"
            style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}>
         
-        <div className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+        <div className="flex items-center gap-2 text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">
           <HelpCircle size={14} />
           <span>Guide d'utilisation</span>
         </div>
@@ -229,7 +295,7 @@ export default function SettingsPage() {
                   onClick={() => toggleGuide(item.id)}
                   className="w-full px-4 py-3 text-left flex justify-between items-center cursor-pointer border-none bg-transparent"
                 >
-                  <span className="text-[13px] font-medium text-[var(--text-primary)]">
+                  <span className="text-dynamic font-medium text-[var(--text-primary)]">
                     {item.title}
                   </span>
                   <span className="text-[var(--text-muted)] flex items-center">
@@ -237,10 +303,9 @@ export default function SettingsPage() {
                   </span>
                 </button>
                 
-                {/* Contenu rétractable */}
                 {isOpen && (
                   <div className="px-4 pb-4 pt-1" style={{ borderTop: '0.5px solid var(--border)' }}>
-                    <p className="text-[12px] text-[var(--text-muted)] leading-relaxed">
+                    <p className="text-dynamic text-[var(--text-muted)] leading-relaxed">
                       {item.content}
                     </p>
                   </div>
@@ -258,7 +323,7 @@ export default function SettingsPage() {
 function Field({ label, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
+      <label className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)]">
         {label}
       </label>
       {children}

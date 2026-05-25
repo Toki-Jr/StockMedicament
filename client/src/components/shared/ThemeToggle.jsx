@@ -8,7 +8,7 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       title={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
       aria-label="Changer le thème"
-      className="flex items-center gap-2 bg-none border [border-width:1.5px] border-[var(--border)] rounded-full p-1 pr-2.5 cursor-pointer text-[var(--text-secondary)] text-xs font-medium transition-all duration-200"
+      className="flex items-center gap-2 bg-none border [border-width:1.5px] border-[var(--border)] rounded-full p-1 pr-2.5 cursor-pointer font-medium transition-all duration-200"
     >
       {/* Track */}
       <div 
@@ -18,7 +18,7 @@ export default function ThemeToggle() {
       >
         {/* Thumb */}
         <span 
-          className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white flex items-center justify-center text-[11px] shadow-[0_1px_4px_rgba(0,0,0,0.2)] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white flex items-center justify-center text-[16px] shadow-[0_1px_4px_rgba(0,0,0,0.2)] transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
             isDark ? 'translate-x-[18px]' : 'translate-x-0'
           }`}
         >
@@ -27,7 +27,7 @@ export default function ThemeToggle() {
       </div>
       
       {/* Label */}
-      <span className="text-xs text-[var(--text-secondary)]">
+      <span className="text-dynamic">
         {isDark ? 'Sombre' : 'Claire'}
       </span>
     </button>

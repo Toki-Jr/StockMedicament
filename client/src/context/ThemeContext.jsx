@@ -53,7 +53,7 @@ export const ThemeProvider = ({ children }) => {
     const vars = themes[theme];
     Object.entries(vars).forEach(([key, val]) => root.style.setProperty(key, val));
     localStorage.setItem('theme', theme);
-    // Classe sur body pour styles globaux
+    
     document.body.classList.toggle('dark', theme === 'dark');
     document.body.style.background = vars['--bg-app'];
     document.body.style.color = vars['--text-primary'];
@@ -62,10 +62,15 @@ export const ThemeProvider = ({ children }) => {
   const toggleTheme = () =>
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
 
+  const resetToLight = () => {
+    setTheme('light');
+    localStorage.setItem('theme', 'light');
+  };
+
   const isDark = theme === 'dark';
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, isDark }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, isDark, resetToLight }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -108,11 +108,11 @@ export default function MouvementsPage() {
   ).length;
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="h-screen flex overflow-hidden rounded-xl border border-white/[0.05] shadow-2xl">
 
       {/* Toast */}
       {toast && (
-        <div className="fixed top-5 right-5 z-[2000] flex items-center gap-2 px-5 py-3 rounded-xl text-white text-[13px] font-medium shadow-lg"
+        <div className="fixed top-5 right-5 z-[2000] flex items-center gap-2 px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg"
              style={{ background: toast.type === 'error' ? C.red : C.greenDark }}>
           {toast.type === 'error' ? <X size={14} /> : <Check size={14} />}
           {toast.msg}
@@ -133,7 +133,7 @@ export default function MouvementsPage() {
               <h1 className="text-[22px] font-medium tracking-tight leading-tight text-[var(--text-primary)]">
                 Mouvements de <span style={{ color: C.green }}>stock</span>
               </h1>
-              <p className="text-[12px] text-[var(--text-muted)] mt-0.5">
+              <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
                 {mouvements.length} mouvement(s) enregistré(s)
               </p>
             </div>
@@ -141,7 +141,7 @@ export default function MouvementsPage() {
           {!drawerOpen && (
             <button
               onClick={openCreate}
-              className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-[13px] font-medium text-white border-none cursor-pointer"
+              className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white border-none cursor-pointer"
               style={{ background: C.greenDark }}>
               <Plus size={15} /> Nouveau mouvement
             </button>
@@ -168,7 +168,7 @@ export default function MouvementsPage() {
               <button
                 key={f.val}
                 onClick={() => setFiltre(p => ({ ...p, type_mvt: f.val }))}
-                className="px-4 py-1.5 rounded-full text-[12px] font-medium cursor-pointer transition-all duration-150"
+                className="px-4 py-1.5 rounded-full text-dynamic font-medium cursor-pointer transition-all duration-150"
                 style={{
                   background: active ? C.greenDark : 'transparent',
                   color:      active ? '#fff' : 'var(--text-muted)',
@@ -182,7 +182,7 @@ export default function MouvementsPage() {
 
         {/* Error */}
         {error && (
-          <div className="px-4 py-3 rounded-lg text-[13px]"
+          <div className="px-4 py-3 rounded-lg text-dynamic"
                style={{ background: C.redSoft, color: C.red, border: `0.5px solid ${C.redBdr}` }}>
             {error}
           </div>
@@ -194,28 +194,28 @@ export default function MouvementsPage() {
 
           <div className="px-5 py-3.5 shrink-0"
                style={{ borderBottom: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-            <h3 className="text-[13px] font-medium text-[var(--text-primary)]">Journal des mouvements</h3>
-            <p className="text-[11px] text-[var(--text-muted)] mt-0.5">{mouvements.length} mouvement(s)</p>
+            <h3 className="text-dynamic font-medium text-[var(--text-primary)]">Journal des mouvements</h3>
+            <p className="text-dynamic text-[var(--text-muted)] mt-0.5">{mouvements.length} mouvement(s)</p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <div className="flex items-center justify-center py-20 gap-3 text-[var(--text-muted)] text-[13px]">
+              <div className="flex items-center justify-center py-20 gap-3 text-[var(--text-muted)] text-dynamic">
                 <Loader2 size={20} className="animate-spin" style={{ color: C.green }} />
                 Chargement…
               </div>
             ) : mouvements.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-[var(--text-muted)]">
-                <div className="text-[40px] mb-3 opacity-20">↕</div>
-                <p className="text-[14px] font-medium">Aucun mouvement enregistré</p>
-                <p className="text-[12px] mt-1">Cliquez sur « Nouveau mouvement » pour commencer</p>
+                <div className="text-dynamic mb-3 opacity-20">↕</div>
+                <p className="text-dynamic font-medium">Aucun mouvement enregistré</p>
+                <p className="text-dynamic mt-1">Cliquez sur « Nouveau mouvement » pour commencer</p>
               </div>
             ) : (
-              <table className="w-full text-[13px] border-collapse">
+              <table className="w-full text-dynamic border-collapse">
                 <thead>
                   <tr style={{ background: 'var(--bg-sidebar)', borderBottom: '0.5px solid var(--border)', position: 'sticky', top: 0 }}>
                     {['Type', 'Lot / Médicament', 'Quantité', 'Motif', 'Date'].map(h => (
-                      <th key={h} className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wider text-[var(--text-muted)]">{h}</th>
+                      <th key={h} className="px-4 py-3 text-left text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -228,17 +228,17 @@ export default function MouvementsPage() {
                           onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.03)'}
                           onMouseLeave={e => e.currentTarget.style.background = i % 2 !== 0 ? 'var(--bg-hover)' : 'transparent'}>
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-dynamic font-medium"
                                 style={{ background: meta.bg, color: meta.color, border: `0.5px solid ${meta.bdr}` }}>
                             {meta.icon} {meta.label}
                           </span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-medium text-[var(--text-primary)]">{m.lot?.medicament?.nom ?? '—'}</div>
-                          <div className="text-[11px] font-mono text-[var(--text-muted)] mt-0.5">{m.lot?.numero_lot}</div>
+                          <div className="text-dynamic font-mono text-[var(--text-muted)] mt-0.5">{m.lot?.numero_lot}</div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-[16px] font-bold"
+                          <span className="text-dynamic font-bold"
                                 style={{ color: m.type_mvt === 'entree' ? C.greenDark : C.red }}>
                             {m.type_mvt === 'entree' ? '+' : '-'}{m.quantite_mvt}
                           </span>
@@ -262,12 +262,12 @@ export default function MouvementsPage() {
 
           <div className="px-5 py-3 flex items-center justify-between shrink-0"
                style={{ borderTop: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-            <span className="text-[11px] text-[var(--text-muted)]">
+            <span className="text-dynamic text-[var(--text-muted)]">
               <span className="font-medium text-[var(--text-primary)]">{mouvements.length}</span> mouvement(s)
             </span>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.green }} />
-              <span className="text-[11px] text-[var(--text-muted)]">Synchronisé</span>
+              <span className="text-dynamic text-[var(--text-muted)]">Synchronisé</span>
             </div>
           </div>
         </div>
@@ -291,8 +291,8 @@ export default function MouvementsPage() {
                 <ArrowUpDown size={18} color={C.green} />
               </div>
               <div>
-                <h2 className="text-[14px] font-medium text-[var(--text-primary)]">Nouveau mouvement</h2>
-                <p className="text-[11px] text-[var(--text-muted)] mt-0.5">Enregistrer une entrée ou sortie</p>
+                <h2 className="text-dynamic font-medium text-[var(--text-primary)]">Nouveau mouvement</h2>
+                <p className="text-dynamic text-[var(--text-muted)] mt-0.5">Enregistrer une entrée ou sortie</p>
               </div>
             </div>
             <button
@@ -308,7 +308,7 @@ export default function MouvementsPage() {
 
             {/* Type */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">
+              <label className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)]">
                 Type de mouvement
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -322,7 +322,7 @@ export default function MouvementsPage() {
                       key={opt.val}
                       type="button"
                       onClick={() => set('type_mvt', opt.val)}
-                      className="py-2.5 rounded-[9px] text-[13px] font-medium cursor-pointer border-none flex items-center justify-center gap-2 transition-all"
+                      className="py-2.5 rounded-[9px] text-dynamic font-medium cursor-pointer border-none flex items-center justify-center gap-2 transition-all"
                       style={{
                         background: active ? opt.bg  : 'var(--bg-sidebar)',
                         border:    `0.5px solid ${active ? opt.bdr : 'var(--border)'}`,
@@ -339,7 +339,7 @@ export default function MouvementsPage() {
             {/* Lot */}
             <Field label="Lot" error={errors.id_lot} icon={<Package size={13} />}>
               <select
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.id_lot ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 value={form.id_lot}
                 onChange={e => set('id_lot', e.target.value)}
@@ -359,7 +359,7 @@ export default function MouvementsPage() {
             <Field label="Quantité" error={errors.quantite_mvt} icon={<ArrowUpDown size={13} />}>
               <input
                 type="number" min="1"
-                className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none"
+                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
                 style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.quantite_mvt ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
                 placeholder="10"
                 value={form.quantite_mvt}
@@ -372,12 +372,12 @@ export default function MouvementsPage() {
 
             {/* Motif */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">Motif</label>
+              <label className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)]">Motif</label>
               <div className="relative">
                 <FileText size={13} className="absolute left-2.5 top-3 text-[var(--text-muted)]" />
                 <textarea
                   rows={3}
-                  className="w-full pl-8 pr-3 py-2.5 text-[13px] rounded-[8px] outline-none resize-none"
+                  className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none resize-none"
                   style={{
                     background: 'var(--bg-sidebar)',
                     border: `0.5px solid ${errors.motif ? C.red : 'var(--border)'}`,
@@ -398,14 +398,14 @@ export default function MouvementsPage() {
               <button
                 type="button"
                 onClick={closeDrawer}
-                className="flex-1 py-2.5 rounded-[8px] text-[13px] font-medium cursor-pointer"
+                className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium cursor-pointer"
                 style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
                 Annuler
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 py-2.5 rounded-[8px] text-[13px] font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                 style={{ background: C.greenDark }}>
                 {saving
                   ? <><Loader2 size={13} className="animate-spin" /> Traitement…</>
@@ -428,8 +428,8 @@ function StatCard({ icon, iconBg, label, value, valueColor }) {
         {icon}
       </div>
       <div>
-        <div className="text-[21px] font-medium leading-none" style={{ color: valueColor }}>{value}</div>
-        <div className="text-[10px] uppercase tracking-wide mt-1 text-[var(--text-muted)]">{label}</div>
+        <div className="text-dynamic font-medium leading-none" style={{ color: valueColor }}>{value}</div>
+        <div className="text-dynamic uppercase tracking-wide mt-1 text-[var(--text-muted)]">{label}</div>
       </div>
     </div>
   );
@@ -438,7 +438,7 @@ function StatCard({ icon, iconBg, label, value, valueColor }) {
 function Field({ label, icon, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-muted)]">{label}</label>
+      <label className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)]">{label}</label>
       <div className="relative">
         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">{icon}</span>
         {children}
@@ -448,5 +448,5 @@ function Field({ label, icon, children }) {
 }
 
 function Err({ children }) {
-  return <span className="text-[11px]" style={{ color: C.red }}>{children}</span>;
+  return <span className="text-dynamic" style={{ color: C.red }}>{children}</span>;
 }

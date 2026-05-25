@@ -15,6 +15,7 @@ model user {
   password  String
   role      String   @default("user")
   photo     String?
+  fontSize  Int      @default(14)
   approuve  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

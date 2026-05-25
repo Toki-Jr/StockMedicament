@@ -6,6 +6,7 @@ import AppLayout     from '../components/layout/AppLayout';
 import LoginPage     from '../pages/LoginPage';
 import RegisterPage  from '../pages/RegisterPage';
 import DashboardPage from '../pages/DashboardPage';
+import LandingPage from '../pages/LandingPage';
 
 // // Chargement à la demande (lazy)
 const MedicamentsPage     = lazy(() => import('../pages/MedicamentPage'));
@@ -26,6 +27,7 @@ const Loader = () => (
 const router = createBrowserRouter([
 
   // ── Routes publiques ──────────────────────────────────────────
+  { path: '/',    element: <LandingPage /> },
   { path: '/login',    element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
 
@@ -36,7 +38,7 @@ const router = createBrowserRouter([
       {
         element: <AppLayout />,      // Sidebar + Navbar + <Outlet />
         children: [
-          { path: '/',          element: <Navigate to="/dashboard" replace /> },
+          // { path: '/',          element: <Navigate to="/dashboard" replace /> },
           { path: '/dashboard', element: <DashboardPage /> },
           { path: '/alertes',   element: <Suspense fallback={<Loader />}><AlertesPage /></Suspense> },
 

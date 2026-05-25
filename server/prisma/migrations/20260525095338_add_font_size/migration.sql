@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "user" ADD COLUMN     "fontSize" INTEGER NOT NULL DEFAULT 14;
