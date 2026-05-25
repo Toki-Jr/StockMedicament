@@ -1,3 +1,0 @@
-*** Lazy && Suspense *** : Charger components de maniere dynamique et ameliore le performances d'une application
-** Lazy ** : charger uniquement un composants seulement quand il est necessaire.
-** Syspense ** : afficher qqchs pendant que le composant chargé avec lazy.
