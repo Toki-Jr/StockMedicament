@@ -10,8 +10,12 @@ const options = {
     },
     servers: [
       {
+        url: 'https://stock-medoc-production.up.railway.app/api',
+        description: 'Serveur de Production (Railway)',
+      },
+      {
         url: 'http://localhost:5000/api',
-        description: 'Serveur de développement',
+        description: 'Serveur de développement local',
       },
     ],
     components: {
@@ -25,7 +29,6 @@ const options = {
     },
     security: [{ bearerAuth: [] }]
   },
-  
   apis: ['./src/routes/*.js'], 
 };
 

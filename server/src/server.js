@@ -1,17 +1,6 @@
-const app = require('./app'); // On importe la configuration de app.js
-const prisma = require('./config/prisma');
-
-// Ajoute ici tes routes de santé ou de test global si besoin
-app.get('/test', async (req, res) => {
-  try {
-    const count = await prisma.medicament.count();
-    res.json({ message: "Connexion Prisma OK !", totalMedicaments: count });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+const app = require('./app');
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Serveur démarré sur le port ${PORT}`);
 });
