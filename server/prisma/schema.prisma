@@ -79,8 +79,8 @@ model alerte {
   lu          Boolean    @default(false)
   role_cible  String?
   createdAt   DateTime   @default(now())
-  id_medoc    Int
-  medicament  medicament @relation(fields: [id_medoc], references: [id_medoc])
+  id_medoc    Int?       
+  medicament  medicament? @relation(fields: [id_medoc], references: [id_medoc])
 }
 
 model historique {
