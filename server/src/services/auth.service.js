@@ -23,7 +23,7 @@ async function register(userData) {
       type_alerte: 'NOUVELLE_INSCRIPTION',
       message:     `${user.nom} ${user.prenom} (${user.role}) s'est inscrit et attend votre approbation.`,
       role_cible:  'ADMIN',
-      id_medoc:    1, // mettre un id_medoc par défaut ou rendre nullable
+      id_medoc:    1,
     },
   });
 
@@ -81,7 +81,7 @@ async function deleteUser(id, adminId) {
   const userId = parseInt(id);
 
   const existing = await prisma.user.findUnique({ where: { id: userId } });
-  if (!existing) return; // ← ne pas throw, juste ignorer si déjà supprimé
+  if (!existing) return;
 
   const isSelf = userId === parseInt(adminId);
   if (!isSelf) {

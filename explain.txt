@@ -1,0 +1,45 @@
+1. Docker Engine
+
+    Le moteur principal de Docker.
+    Il :
+        crée les conteneurs,
+        lance les images,
+        gère les réseaux, (chaque maison=conteneur sans routes=reseau)
+        gère les volumes. (Sauvegarde les donnees= disk externe)
+
+      IMAGE  ----->  CONTENEUR
+    (recette)      (application en marche)
+
+    Conteneur: instance active d'une image
+    Construction d'une image = Dockefile
+
+    Portabilte, leger, rapidite
+    Docker connecte auto aux services.
+
+    Docker-compose: gérer plusieurs conteneurs Docker en même temps avec un seul fichier.
+        construit les images,
+        crée les conteneurs,
+        crée le réseau,
+        connecte les conteneurs,
+        démarre les services.
+
+    | Docker              | Docker Compose            |
+    | ------------------- | ------------------------- |
+    | Gère un conteneur   | Gère plusieurs conteneurs |
+    | Commandes manuelles | Automatisation            |
+    | Simple projet       | Applications complètes    |
+
+
+2 - Backend
+  server.js :
+    démarre le backend,
+    ouvre le port,
+    lance l’application.
+  app.js: configure l'application
+  Controller: recoit les requetes HTTP, exemple:" Le réceptionniste dans une entreprise. Il reçoit la demande, traite, renvoie une réponse."
+  Middlewares: code execute avant d'arriver su controleur
+  Service: controleur demande le service fait le travail pour eviter con trop long.
+  
+  Services communique au back
+  AuthContext: Gestion globale des données comme user, langue, theme, panier
+  Les Hooks sont des fonctions React qui ajoutent des fonctionnalités aux composants fonctionnels comme la gestion des données, des effets, du partage global et des optimisations.

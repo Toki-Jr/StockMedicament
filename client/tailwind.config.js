@@ -6,7 +6,13 @@ export default {
   ],
   darkMode: 'class',  
   theme: {
-    extend: {},
+    extend: {
+      ontFamily: {
+        syne: ['Syne', 'sans-serif'],
+        sans: ['DM Sans', 'sans-serif'],
+        mono: ['DM Mono', 'monospace'],
+      },
+    },
   },
   plugins: [],
 }
