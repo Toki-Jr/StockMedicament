@@ -1,224 +1,211 @@
-const prisma = require('../config/prisma');
-const { log } = require('./historique.service');
+const prisma = require('../config/prisma.js');
+const { log } = require('./historique.service.js');
+const { create: createMouvement } = require('./mouvement.service');
 
-const create = async ({ lignes }, userId) => {
-  if (!lignes || lignes.length === 0) {
-    const error = new Error("Le panier est vide");
-    error.statusCode = 400;
-    throw error;
-  }
-
-  // On utilise une transaction Prisma pour s'assurer que TOUT est créé ou RIEN du tout (en cas d'erreur)
-  return prisma.$transaction(
-    lignes.map(l => 
-      prisma.commande.create({
-        data: {
-          quantite:   parseInt(l.quantite),
-          statut:     'brouillon',
-          medicament: { connect: { id_medoc: parseInt(l.id_medoc) } },
-          user:       { connect: { id:       parseInt(userId)   } },
-        },
-        include: { medicament: { select: { nom: true } } },
-      })
-    )
-  );
-};
-
-module.exports = { create };
-
-// brouillon → en_attente  |  notif → ADMIN
-const envoyer = async (id, userId) => {
-  const commande = await prisma.commande.findUnique({
-    where:   { id_commande: parseInt(id) },
+// ── Include réutilisable ──────────────────────────────────────────────────────
+const COMMANDE_INCLUDE = {
+  lignes: {
     include: {
-      medicament: { select: { nom: true, dosage: true } },
-      user:       { select: { nom: true, prenom: true, role: true } },
+      medicament: {
+        select: { nom: true, code_cip: true, prix_unitaire: true },
+      },
     },
-  });
-
-  if (!commande)                             throw { statusCode: 404, message: 'Commande introuvable' };
-  if (commande.id_user !== parseInt(userId)) throw { statusCode: 403, message: 'Non autorisé' };
-  if (commande.statut  !== 'brouillon')      throw { statusCode: 400, message: 'Commande déjà envoyée' };
-
-  const updated = await prisma.commande.update({
-    where: { id_commande: parseInt(id) },
-    data:  { statut: 'en_attente' },
-  });
-
-  await prisma.alerte.create({
-    data: {
-      type_alerte: 'NOUVELLE_COMMANDE',
-      message:     `${commande.user.nom} ${commande.user.prenom} (${commande.user.role}) a envoyé une commande de "${commande.medicament.nom} ${commande.medicament.dosage} mg", quantite: ${commande.quantite}.`,
-      role_cible:  'ADMIN',          // ← notif admin uniquement
-      id_medoc:    commande.id_medoc,
-    },
-  });
-
-  await log('COMMANDE_ENVOYEE', `Commande #${id} envoyée à l'admin`, userId);
-
-  return updated;
+  },
+  user: {
+    select: { nom: true, prenom: true, role: true },
+  },
 };
 
-const removeBrouillon = async (id, userId) => {
-  const commande = await prisma.commande.findUnique({
-    where: { id_commande: parseInt(id) },
-  });
-
-  if (!commande)                             throw { statusCode: 404, message: 'Commande introuvable' };
-  if (commande.id_user !== parseInt(userId)) throw { statusCode: 403, message: 'Non autorisé' };
-  if (commande.statut  !== 'brouillon')      throw { statusCode: 400, message: 'Seul un brouillon peut être supprimé' };
-
-  return prisma.commande.delete({ where: { id_commande: parseInt(id) } });
-};
-
-// en_attente → validee  |  stock décrémenté  |  notif → PHARMACIEN
-const valider = async (id, motif = '') => {
-  const commande = await prisma.commande.findUnique({
-    where:   { id_commande: parseInt(id) },
-    include: {
-      medicament: { select: { nom: true, dosage: true } },
-      user:       { select: { nom: true, prenom: true } },
-    },
-  });
-
-  if (!commande)                        throw { statusCode: 404, message: 'Commande introuvable' };
-  if (commande.statut !== 'en_attente') throw { statusCode: 400, message: 'Commande non en attente' };
-
-  // Récupérer les lots disponibles (FIFO : expiration la plus proche d'abord)
-  const lots = await prisma.lot.findMany({
-    where:   { id_medoc: commande.id_medoc },
-    orderBy: { date_expiration: 'asc' },
-  });
-
-  // Calculer le stock total disponible
-  const stockTotal = lots.reduce((sum, l) => sum + (l.quantite_entre - l.quantite_sortie), 0);
-
-  if (stockTotal < commande.quantite)
-    throw {
-      statusCode: 400,
-      message: `Stock insuffisant : ${stockTotal} unité(s) disponible(s) pour "${commande.medicament.nom}"`,
-    };
-
-  // Répartir la sortie sur les lots (FIFO)
-  let reste = commande.quantite;
-  const sorties = []; // [{ lot, qte }]
-
-  for (const lot of lots) {
-    if (reste <= 0) break;
-    const dispo = lot.quantite_entre - lot.quantite_sortie;
-    if (dispo <= 0) continue;
-    const qte = Math.min(dispo, reste);
-    sorties.push({ lot, qte });
-    reste -= qte;
-  }
-
-  // Transaction : validation + sorties lots + mouvements
-  await prisma.$transaction([
-
-    // 1. Passer la commande en validee
-    prisma.commande.update({
-      where: { id_commande: parseInt(id) },
-      data:  { statut: 'validee' },
-    }),
-
-    // 2. Mettre à jour quantite_sortie sur chaque lot touché
-    ...sorties.map(({ lot, qte }) =>
-      prisma.lot.update({
-        where: { id_lot: lot.id_lot },
-        data:  { quantite_sortie: { increment: qte } },
-      })
-    ),
-
-    // 3. Créer un mouvementstock par lot touché
-    ...sorties.map(({ lot, qte }) =>
-      prisma.mouvementstock.create({
-        data: {
-          type_mvt:     'sortie',
-          quantite_mvt: qte,
-          motif:        motif || `Commande #${commande.id_commande} validée`,
-          id_lot:       lot.id_lot,
-        },
-      })
-    ),
-
-  ]);
-
-  // Notif pharmacien
-  await prisma.alerte.create({
-    data: {
-      type_alerte: 'COMMANDE_VALIDEE',
-      message: `Votre commande de "${commande.medicament.nom} ${commande.medicament.dosage} mg", quantite: ${commande.quantite} a été validée.${motif ? ` Motif : ${motif}` : ''}`,
-      role_cible:  'PHARMACIEN',
-      id_medoc:    commande.id_medoc,
-    },
-  });
-
-  await log('COMMANDE_VALIDEE', `Commande #${id} validée${motif ? ` — ${motif}` : ''}`, commande.id_user);
-
-  return await prisma.commande.findUnique({
-    where:   { id_commande: parseInt(id) },
-    include: { medicament: { select: { nom: true } } },
-  });
-};
-
-// en_attente → rejetee  |  notif → PHARMACIEN
-const rejeter = async (id, motif) => {
-  if (!motif || motif.trim() === '')
-    throw { statusCode: 400, message: 'Le motif de rejet est obligatoire' };
-
-  const commande = await prisma.commande.findUnique({
-    where:   { id_commande: parseInt(id) },
-    include: {
-      medicament: { select: { nom: true, dosage: true } },
-      user:       { select: { nom: true, prenom: true } },
-    },
-  });
-
-  if (!commande)                        throw { statusCode: 404, message: 'Commande introuvable' };
-  if (commande.statut !== 'en_attente') throw { statusCode: 400, message: 'Commande non en attente' };
-
-  const updated = await prisma.commande.update({
-    where: { id_commande: parseInt(id) },
-    data:  { statut: 'rejetee' },
-  });
-
-  await prisma.alerte.create({
-    data: {
-      type_alerte: 'COMMANDE_REJETEE',
-      message:     `Votre commande de "${commande.medicament.nom} ${commande.medicament.dosage} mg", quantite: ${commande.quantite} a été rejetée. Motif : ${motif.trim()}`,
-      role_cible:  'PHARMACIEN',
-      id_medoc:    commande.id_medoc,
-    },
-  });
-
-  await log('COMMANDE_REJETEE', `Commande #${id} rejetée — ${motif}`, commande.id_user);
-
-  return updated;
-};
-
+// ── GET ALL ───────────────────────────────────────────────────────────────────
 const getAll = async (userRole, userId) => {
   return prisma.commande.findMany({
-    where: userRole === 'admin'
-      ? {}
-      : { id_user: parseInt(userId) },
-    include: {
-      medicament: { select: { nom: true, code_cip: true } },
-      user:       { select: { nom: true, prenom: true, role: true } },
-    },
+    where: userRole === 'admin' ? {} : { id_user: parseInt(userId) },
+    include: COMMANDE_INCLUDE,
     orderBy: { date_commande: 'desc' },
   });
 };
 
+// ── GET BY ID ─────────────────────────────────────────────────────────────────
 const getById = async (id) => {
-  const commande = await prisma.commande.findUnique({
-    where:   { id_commande: parseInt(id) },
-    include: {
-      medicament: true,
-      user:       { select: { nom: true, prenom: true, role: true } },
-    },
+  return prisma.commande.findUnique({
+    where: { id_commande: parseInt(id) },
+    include: COMMANDE_INCLUDE,
   });
-  if (!commande) throw { statusCode: 404, message: 'Commande introuvable' };
+};
+
+// ── CREATE (avec lignes) ──────────────────────────────────────────────────────
+const create = async (userId, payload) => {
+  const { lignes } = payload;
+
+  if (!lignes || lignes.length === 0) {
+    throw new Error('La commande doit contenir au moins un médicament.');
+  }
+
+  const commande = await prisma.commande.create({
+    data: {
+      id_user: parseInt(userId),
+      statut:  'brouillon',
+      lignes: {
+        create: lignes.map(l => ({
+          id_medoc:  parseInt(l.id_medoc),
+          quantite:  parseInt(l.quantite),
+        })),
+      },
+    },
+    include: COMMANDE_INCLUDE,
+  });
+
+  await log(
+    'COMMANDE_CREEE',
+    `Commande #${commande.id_commande} créée (${commande.lignes.length} ligne(s))`,
+    userId,
+  );
+
   return commande;
 };
 
-module.exports = { create, envoyer, removeBrouillon, valider, rejeter, getAll, getById };
+// ── ENVOYER (brouillon → en_attente) ─────────────────────────────────────────
+const envoyer = async (id, userId, userRole) => {
+  const commande = await getById(id);
+
+  if (!commande) throw new Error('Commande introuvable.');
+  if (userRole !== 'admin' && commande.id_user !== parseInt(userId)) {
+    throw new Error('Accès refusé.');
+  }
+  if (commande.statut !== 'brouillon') {
+    throw new Error('Seul un brouillon peut être envoyé.');
+  }
+
+  const updated = await prisma.commande.update({
+    where:   { id_commande: parseInt(id) },
+    data:    { statut: 'en_attente' },
+    include: COMMANDE_INCLUDE,
+  });
+
+  const alerte = await prisma.alerte.create({
+    data: {
+      type_alerte: 'NOUVELLE_COMMANDE',
+      message: `Nouvelle commande #${id} de ${commande.user.nom} ${commande.user.prenom}`,
+      role_cible: 'admin',
+    }
+  });
+
+  await log(
+    'COMMANDE_ENVOYEE',
+    `Commande #${id} envoyée à l'admin`,
+    userId,
+  );
+
+  return updated;
+};
+
+// ── VALIDER (en_attente → validee) ───────────────────────────────────────────
+const valider = async (id, motif, adminId) => {
+  const commande = await getById(id);
+
+  if (!commande) throw new Error('Commande introuvable.');
+  if (commande.statut !== 'en_attente') {
+    throw new Error('Seule une commande en attente peut être validée.');
+  }
+
+  const updated = await prisma.commande.update({
+    where:   { id_commande: parseInt(id) },
+    data:    { statut: 'validee', motif_rejet: motif || null },
+    include: COMMANDE_INCLUDE,
+  });
+
+  // ── Créer un mouvement sortie par ligne ──────────────────────────────────
+  for (const ligne of commande.lignes) {
+    const lot = await prisma.lot.findFirst({
+      where: { id_medoc: ligne.id_medoc },
+      orderBy: { date_expiration: 'asc' }, // FEFO
+    });
+
+    if (!lot) continue;
+
+    await createMouvement({
+      type_mvt:     'sortie',
+      quantite_mvt: ligne.quantite,
+      motif:        `Commande #${id}`,
+      id_lot:       lot.id_lot,
+    });
+  }
+
+  await prisma.alerte.create({
+    data: {
+      type_alerte: 'COMMANDE_VALIDEE',
+      message:     `Votre commande #${id} a été validée.${motif ? ` Motif : ${motif}` : ''}`,
+      role_cible:  commande.user.role.toLowerCase(),
+      id_user:     commande.id_user,
+    },
+  });
+
+  await log(
+    'COMMANDE_VALIDEE',
+    `Commande #${id} validée${motif ? ` — ${motif}` : ''}`,
+    adminId ?? commande.id_user,
+  );
+
+  return updated;
+};
+
+// ── REJETER (en_attente → rejetee) ───────────────────────────────────────────
+const rejeter = async (id, motif, adminId) => {
+  const commande = await getById(id);
+
+  if (!commande) throw new Error('Commande introuvable.');
+  if (commande.statut !== 'en_attente') {
+    throw new Error('Seule une commande en attente peut être rejetée.');
+  }
+  if (!motif?.trim()) throw new Error('Le motif de rejet est obligatoire.');
+
+  const updated = await prisma.commande.update({
+    where:   { id_commande: parseInt(id) },
+    data:    { statut: 'rejetee', motif_rejet: motif },
+    include: COMMANDE_INCLUDE,
+  });
+
+  console.log('[rejeter] role_cible:', commande.user?.role, '| user complet:', commande.user);
+
+  await prisma.alerte.create({
+    data: {
+      type_alerte: 'COMMANDE_REJETEE',
+      message:     `Votre commande #${id} a été rejetée. Motif : ${motif}`,
+      role_cible:  commande.user.role,
+      id_user: commande.id_user,
+    },
+  });
+
+  await log(
+    'COMMANDE_REJETEE',
+    `Commande #${id} rejetée — ${motif}`,
+    adminId ?? commande.id_user,
+  );
+
+  return updated;
+};
+
+// ── DELETE brouillon ──────────────────────────────────────────────────────────
+const removeBrouillon = async (id, userId, userRole) => {
+  const commande = await getById(id);
+
+  if (!commande) throw new Error('Commande introuvable.');
+  if (userRole !== 'admin' && commande.id_user !== parseInt(userId)) {
+    throw new Error('Accès refusé.');
+  }
+  if (commande.statut !== 'brouillon') {
+    throw new Error('Seul un brouillon peut être supprimé.');
+  }
+
+  await prisma.commande.delete({
+    where: { id_commande: parseInt(id) },
+  });
+
+  await log(
+    'COMMANDE_SUPPRIMEE',
+    `Brouillon #${id} supprimé`,
+    userId,
+  );
+};
+
+module.exports = { getAll, getById, create, envoyer, valider, rejeter, removeBrouillon };

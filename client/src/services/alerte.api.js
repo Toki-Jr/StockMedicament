@@ -4,10 +4,13 @@ export const getAlertes = (params = {}) =>
   api.get('/alertes', { params }).then(r => r.data?.data ?? r.data ?? []);
 
 export const getNonLues = () =>
-  api.get('/alertes/non-lues').then(r => {
-  const d = r.data;
-  const count = d?.count ?? d?.data?.count ?? (typeof d === 'number' ? d : 0);
-  return { count };
+  api.get('/alertes/non-lues', { 
+    params: { t: Date.now() },
+    headers: { 'Cache-Control': 'no-cache' }
+  }).then(r => {
+    const d = r.data;
+    const count = d?.count ?? d?.data?.count ?? (typeof d === 'number' ? d : 0);
+    return { count };
 });
 
 export const marquerLu = (id) =>

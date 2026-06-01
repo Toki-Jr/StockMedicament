@@ -4,6 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'react-datepicker/dist/react-datepicker.css';
+
 :root {
   --bg-app:         #f1f5f9;
   --bg-sidebar:     #ffffff;
@@ -73,4 +75,24 @@ button, a, select, summary, [role="button"], .cursor-pointer {
 
 td {
   user-select: text;
+}
+
+/* --- Personnalisation DatePicker --- */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+/* Forcer le calendrier à être au-dessus des autres éléments */
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+/* Corriger l'affichage vertical des jours/mois */
+.react-datepicker__month-container {
+  display: block !important;
+}
+
+.react-datepicker__day-names, 
+.react-datepicker__week {
+  display: flex !important;
+  justify-content: space-between;
 }

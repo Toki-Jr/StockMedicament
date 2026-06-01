@@ -20,6 +20,7 @@ model user {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   commandes commande[]
+  alertes   alerte[]
   historiques historique[]
 }
 
@@ -33,7 +34,7 @@ model medicament {
   seuil_alerte_qte        Int
   seuil_alerte_peremption Int
   lots                    lot[]
-  commandes               commande[]
+  lignes                  lignecommande[]
   alertes                 alerte[]
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt
@@ -65,10 +66,9 @@ model commande {
   id_commande   Int        @id @default(autoincrement())
   date_commande DateTime   @default(now())
   statut        String     @default("brouillon")
-  quantite      Int
-  id_medoc      Int
+  motif_rejet   String?
   id_user       Int
-  medicament    medicament @relation(fields: [id_medoc], references: [id_medoc])
+  lignes        lignecommande[]
   user          user       @relation(fields: [id_user], references: [id])
 }
 
@@ -79,8 +79,11 @@ model alerte {
   lu          Boolean    @default(false)
   role_cible  String?
   createdAt   DateTime   @default(now())
-  id_medoc    Int
-  medicament  medicament @relation(fields: [id_medoc], references: [id_medoc])
+  id_user     Int?
+  user        user?      @relation(fields: [id_user], references: [id])
+  @@index([id_user])
+  id_medoc    Int?
+  medicament  medicament? @relation(fields: [id_medoc], references: [id_medoc])
 }
 
 model historique {
@@ -90,4 +93,13 @@ model historique {
   id_user       Int
   user          user     @relation(fields: [id_user], references: [id])
   createdAt     DateTime @default(now())
+}
+
+model lignecommande {
+  id_ligne    Int @id @default(autoincrement())
+  quantite    Int
+  id_commande Int
+  id_medoc    Int
+  commande    commande @relation(fields: [id_commande], references: [id_commande], onDelete: Cascade)
+  medicament  medicament @relation(fields: [id_medoc], references: [id_medoc])
 }

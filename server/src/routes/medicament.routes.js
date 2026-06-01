@@ -43,6 +43,7 @@ const { authenticate, authorize } = require('../middlewares/auth.middleware');
  *     responses:
  *       201: { description: Médicament créé }
  */
+router.post('/refresh-alertes', ctrl.refreshAlertes);
 router.get('/', authenticate, ctrl.getAll);
 router.post('/', authenticate, authorize('admin', 'pharmacien'), ctrl.create);
 

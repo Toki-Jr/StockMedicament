@@ -10,7 +10,7 @@ const getAll = async ({ type_mvt, id_lot } = {}) => {
     },
     include: {
       lot: {
-        include: { medicament: { select: { nom: true, code_cip: true } } },
+        include: { medicament: { select: { nom: true, code_cip: true, prix_unitaire: true } } },
       },
     },
     orderBy: { date_mvt: 'desc' },

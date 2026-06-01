@@ -1,5 +1,8 @@
 import api from './axios.instance';
 
+export const refreshAlertes = () =>
+  api.post('/medicaments/refresh-alertes').then(r => r.data);
+
 export const getMedicaments = (search = '') =>
   api.get('/medicaments', { params: search ? { search } : {} }).then(r => r.data.data);
 

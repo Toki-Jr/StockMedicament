@@ -21,14 +21,14 @@ const create = async (req, res, next) => {
     if (!numero_lot || !date_fabrication || !date_expiration || !quantite_entre || !id_medoc)
       return badRequest(res, 'Champs requis : numero_lot, date_fabrication, date_expiration, quantite_entre, id_medoc');
 
-    const data = await svc.create(req.body);
+    const data = await svc.create(req.body, req.user.id);
     return created(res, data, 'Lot créé');
   } catch (err) { next(err); }
 };
 
 const update = async (req, res, next) => {
   try {
-    const data = await svc.update(req.params.id, req.body);
+    const data = await svc.update(req.params.id, req.body, req.user.id);
     return success(res, data, 'Lot mis à jour');
   } catch (err) { next(err); }
 };

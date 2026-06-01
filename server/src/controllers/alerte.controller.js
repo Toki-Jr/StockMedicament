@@ -2,7 +2,8 @@ const service = require('../services/alerte.service');
 
 const getAll = async (req, res) => {
   try {
-    res.json(await service.getAll(req.query, req.user.role));
+    const alertes = await service.getAll(req.query, req.user.role, req.user.id);
+    res.json(alertes);
   } catch (err) {
     res.status(err.statusCode ?? 500).json({ message: err.message });
   }
@@ -18,18 +19,18 @@ const getById = async (req, res) => {
 
 const marquerLu = async (req, res) => {
   try {
-    res.json(await service.marquerLu(req.params.id));
+    res.json(await service.marquerLu(req.params.id, req.user.role, req.user.id));
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(err.statusCode ?? 500).json({ message: err.message });
   }
 };
 
 const marquerToutesLues = async (req, res) => {
   try {
-    await service.marquerToutesLues(req.user.role);
+    await service.marquerToutesLues(req.user.role, req.user.id);
     res.json({ message: 'Toutes les alertes marquées comme lues' });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(err.statusCode ?? 500).json({ message: err.message });
   }
 };
 
@@ -44,10 +45,10 @@ const remove = async (req, res) => {
 
 const getNonLues = async (req, res) => {
   try {
-    const count = await service.getNonLues(req.user.role);
+    const count = await service.getNonLues(req.user.role, req.user.id);
     res.json({ count });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(err.statusCode ?? 500).json({ message: err.message });
   }
 };
 

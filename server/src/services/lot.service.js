@@ -1,5 +1,6 @@
 const prisma = require('../config/prisma');
 const { verifierAlertes } = require('./medicament.service');
+const { log }     = require('./historique.service');
 
 const getAll = async (id_medoc) => {
   return prisma.lot.findMany({
@@ -28,7 +29,7 @@ const getById = async (id) => {
   return { ...lot, stock_restant: lot.quantite_entre - lot.quantite_sortie };
 };
 
-const create = async (data) => {
+const create = async (data, userId) => {
   const lot = await prisma.lot.create({
     data: {
       ...data,
@@ -40,13 +41,16 @@ const create = async (data) => {
     },
     include: { medicament: { select: { nom: true } } },
   });
+  const user = await prisma.user.findUnique({ where: {id: parseInt(userId)} });
+
   // Vérifier alertes après création d'un lot
   await verifierAlertes(data.id_medoc);
+  await log("Nouveau lot", `${user.nom} ${user.prenom} a enttré de medicament dans lot numero: ${lot.numero_lot}`, userId);
   return lot;
 };
 
-const update = async (id, data) => {
-  return prisma.lot.update({
+const update = async (id, data, userId) => {
+  const lot =await prisma.lot.update({
     where: { id_lot: parseInt(id) },
     data: {
       ...data,
@@ -54,6 +58,11 @@ const update = async (id, data) => {
       ...(data.date_expiration && { date_expiration: new Date(data.date_expiration) }),
     },
   });
+  const user = await prisma.user.findUnique({ where: {id: parseInt(userId)} });
+
+  await log("Modification de lot", `${user.nom} ${user.prenom} a modifié dans le lot numero: ${lot.numero_lot}`, userId);
+
+  return lot;
 };
 
 const remove = async (id) => {

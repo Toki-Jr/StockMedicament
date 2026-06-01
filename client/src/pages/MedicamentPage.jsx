@@ -2,24 +2,9 @@ import { useState } from 'react';
 import { useMedicaments } from '../hooks/useMedicaments';
 import { useAuth } from '../context/AuthContext';
 import {
-  Pill, AlertTriangle, CheckCircle2, Search, Trash2,
-  Plus, X, Check, Pencil, Loader2,
+  Pill, Search, Trash2, Plus, X, Check, Pencil, Loader2,
   Hash, Tag, FlaskConical, Gauge, Coins, BellDot, CalendarClock
 } from 'lucide-react';
-
-/* ─── Palette ─── */
-const C = {
-  green:      '#22c55e',
-  greenDark:  '#16a34a',
-  greenSoft:  'rgba(34,197,94,0.10)',
-  greenBdr:   'rgba(34,197,94,0.25)',
-  orange:     '#f97316',
-  orangeSoft: 'rgba(249,115,22,0.10)',
-  orangeBdr:  'rgba(249,115,22,0.25)',
-  red:        '#ef4444',
-  redSoft:    'rgba(239,68,68,0.10)',
-  redBdr:     'rgba(239,68,68,0.25)',
-};
 
 const FORMES = ['comprimé', 'gélule', 'sirop', 'injectable', 'pommade', 'suppositoire', 'patch', 'autre'];
 
@@ -46,7 +31,6 @@ export default function MedicamentsPage() {
 
   const total     = medicaments.length;
   const critiques = medicaments.filter(m => (m.stock_actuel ?? 0) <= m.seuil_alerte_qte).length;
-  const normaux   = total - critiques;
 
   const displayed = filtre === 'critique'
     ? medicaments.filter(m => (m.stock_actuel ?? 0) <= m.seuil_alerte_qte)
@@ -147,11 +131,13 @@ export default function MedicamentsPage() {
   };
 
   return (
-   <div className="h-screen flex overflow-hidden rounded-xl border border-white/[0.05] shadow-2xl">
+    <div className="h-screen flex overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xl bg-white dark:bg-zinc-950 text-dynamic">
+      
       {/* Toast */}
       {toast && (
-        <div className="fixed top-5 right-5 z-[2000] flex items-center gap-2 px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg"
-             style={{ background: toast.type === 'error' ? C.red : C.greenDark }}>
+        <div className={`fixed top-5 right-5 z-[2000] flex items-center gap-2 px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg ${
+          toast.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'
+        }`}>
           {toast.type === 'error' ? <X size={14} /> : <Check size={14} />}
           {toast.msg}
         </div>
@@ -163,15 +149,14 @@ export default function MedicamentsPage() {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0"
-                 style={{ background: C.greenSoft, border: `0.5px solid ${C.greenBdr}` }}>
-              <Pill size={20} color={C.green} />
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/30">
+              <Pill size={20} className="text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-[22px] font-medium tracking-tight leading-tight text-[var(--text-primary)]">
-                Liste de <span style={{ color: C.green }}>médicaments</span>
+              <h1 className="text-[22px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 text-dynamic">
+                Liste de <span className="text-emerald-600 dark:text-emerald-400">médicaments</span>
               </h1>
-              <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
+              <p className="text-dynamic text-zinc-500 dark:text-zinc-400 mt-0.5">
                 {total} médicament(s) dans la base
               </p>
             </div>
@@ -179,36 +164,24 @@ export default function MedicamentsPage() {
           {canEdit && !drawerOpen && (
             <button
               onClick={openCreate}
-              className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white border-none cursor-pointer"
-              style={{ background: C.greenDark }}>
+              className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white cursor-pointer bg-emerald-600 hover:bg-emerald-700 transition-colors border-none">
               <Plus size={15} /> Nouveau médicament
             </button>
           )}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 shrink-0">
-          <StatCard icon={<Pill size={18} color={C.green} />}           iconBg={C.greenSoft} label="Total médicaments" value={total}     valueColor={C.green}     />
-          <StatCard icon={<AlertTriangle size={18} color={C.red} />}    iconBg={C.redSoft}   label="Stock critique"    value={critiques} valueColor={C.red}       />
-          <StatCard icon={<CheckCircle2 size={18} color={C.greenDark}/>} iconBg={C.greenSoft} label="Stock normal"      value={normaux}   valueColor={C.greenDark} />
-        </div>
-
         {/* Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shrink-0">
-          <div className="flex items-center gap-2 px-3.5 rounded-[10px] flex-1 max-w-[360px]"
-               style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}
-               onFocusCapture={e => e.currentTarget.style.borderColor = C.green}
-               onBlurCapture={e  => e.currentTarget.style.borderColor = 'var(--border)'}>
-            <Search size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+          <div className="flex items-center gap-2 px-3.5 rounded-lg flex-1 max-w-[360px] bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 dark:focus-within:border-emerald-500 transition-colors">
+            <Search size={14} className="text-zinc-400 dark:text-zinc-500 shrink-0" />
             <input
-              className="flex-1 bg-transparent py-2.5 text-dynamic outline-none placeholder:opacity-40 text-[var(--text-primary)]"
-              style={{ border: 'none' }}
+              className="flex-1 bg-transparent py-2.5 text-dynamic text-zinc-900 dark:text-zinc-50 outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Rechercher un médicament…"
+              placeholder="Recherche…"
             />
             {search && (
-              <button onClick={() => setSearch('')} className="border-none bg-transparent cursor-pointer p-0">
+              <button onClick={() => setSearch('')} className="border-none bg-transparent cursor-pointer p-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
                 <X size={14} />
               </button>
             )}
@@ -217,19 +190,18 @@ export default function MedicamentsPage() {
             {[
               { val: '',         label: 'Tous'        },
               { val: 'normal',   label: '✓ Normaux'   },
-              { val: 'critique', label: '⚠ Critiques' },
+              { val: 'critique', label: `⚠ Critiques (${critiques})` },
             ].map(f => {
               const active = filtre === f.val;
               return (
                 <button
                   key={f.val}
                   onClick={() => setFiltre(f.val)}
-                  className="px-4 py-1.5 rounded-full text-dynamic font-medium cursor-pointer transition-all duration-150"
-                  style={{
-                    background: active ? C.greenDark : 'transparent',
-                    color:      active ? '#fff' : 'var(--text-muted)',
-                    border:     active ? 'none' : '0.5px solid var(--border)',
-                  }}>
+                  className={`px-4 py-1.5 rounded-full font-semibold cursor-pointer border transition-all text-dynamic ${
+                    active 
+                      ? 'bg-emerald-600 text-white border-transparent' 
+                      : 'bg-transparent text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900'
+                  }`}>
                   {f.label}
                 </button>
               );
@@ -239,89 +211,81 @@ export default function MedicamentsPage() {
 
         {/* Error */}
         {error && (
-          <div className="px-4 py-3 rounded-lg text-dynamic"
-               style={{ background: C.redSoft, color: C.red, border: `0.5px solid ${C.redBdr}` }}>
+          <div className="px-4 py-3 rounded-lg text-dynamic bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30">
             {error}
           </div>
         )}
 
         {/* Table */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden rounded-xl"
-             style={{ border: '0.5px solid var(--border)' }}>
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
 
-          <div className="px-5 py-3.5 shrink-0"
-               style={{ borderBottom: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-            <h3 className="text-dynamic font-medium text-[var(--text-primary)]">Répertoire des médicaments</h3>
-            <p className="text-dynamic text-[var(--text-muted)] mt-0.5">{displayed.length} sur {total} médicament(s)</p>
+          <div className="px-5 py-3.5 shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            <h3 className="text-dynamic font-medium text-zinc-900 dark:text-zinc-50">Répertoire des médicaments</h3>
+            <p className="text-dynamic text-zinc-500 dark:text-zinc-400 mt-0.5">{displayed.length} sur {total} médicament(s)</p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <div className="flex items-center justify-center py-20 gap-3 text-[var(--text-muted)] text-dynamic">
-                <Loader2 size={20} className="animate-spin" style={{ color: C.green }} />
+              <div className="flex items-center justify-center py-20 gap-3 text-dynamic text-zinc-500 dark:text-zinc-400">
+                <Loader2 size={20} className="animate-spin text-emerald-600 dark:text-emerald-400" />
                 Chargement…
               </div>
             ) : displayed.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-[var(--text-muted)]">
-                <div className="text-dynamic mb-3 opacity-20">💊</div>
-                <p className="text-dynamic font-medium">Aucun médicament trouvé</p>
-                <p className="text-dynamic mt-1">
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="text-3xl mb-3 opacity-20 text-zinc-400 text-dynamic">💊</div>
+                <p className="text-dynamic font-medium text-zinc-900 dark:text-zinc-50">Aucun médicament trouvé</p>
+                <p className="text-dynamic text-zinc-500 dark:text-zinc-400 mt-1 max-w-xs">
                   {search ? `Aucun résultat pour « ${search} »` : 'Cliquez sur « Nouveau médicament » pour commencer'}
                 </p>
               </div>
             ) : (
               <table className="w-full text-dynamic border-collapse">
                 <thead>
-                  <tr style={{ background: 'var(--bg-sidebar)', borderBottom: '0.5px solid var(--border)', position: 'sticky', top: 0 }}>
+                  <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-10">
                     {['Référence', 'Médicament', 'Forme', 'Dosage', 'Prix', 'Seuil stock', 'Péremption', ...(canEdit ? ['Actions'] : [])].map(h => (
-                      <th key={h} className="px-3.5 py-3 text-left text-dynamic font-medium uppercase tracking-wider text-[var(--text-muted)]">{h}</th>
+                      <th key={h} className="px-3.5 py-3 text-left font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-dynamic">{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                   {displayed.map((m, i) => (
-                    <tr key={m.id_medoc}
-                        style={{ borderTop: '0.5px solid var(--border)', background: i % 2 !== 0 ? 'var(--bg-hover)' : 'transparent' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.03)'}
-                        onMouseLeave={e => e.currentTarget.style.background = i % 2 !== 0 ? 'var(--bg-hover)' : 'transparent'}>
+                    <tr key={m.id_medoc} className={`transition-colors hover:bg-emerald-500/[0.02] ${
+                      i % 2 !== 0 ? 'bg-zinc-50/50 dark:bg-zinc-900/20' : 'bg-transparent'
+                    }`}>
                       <td className="px-3.5 py-3">
-                        <span className="text-dynamic font-mono px-2 py-0.5 rounded-[5px]"
-                              style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
+                        <span className="font-mono px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 text-dynamic">
                           {m.code_cip}
                         </span>
                       </td>
                       <td className="px-3.5 py-3">
-                        <span className="font-medium text-[var(--text-primary)]">{m.nom}</span>
+                        <span className="font-medium text-zinc-900 dark:text-zinc-50 text-dynamic">{m.nom}</span>
                       </td>
                       <td className="px-3.5 py-3">
-                        <span className="text-dynamic px-2 py-0.5 rounded-full font-medium"
-                              style={{ background: C.greenSoft, color: C.greenDark, border: `0.5px solid ${C.greenBdr}` }}>
+                        <span className="font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30 text-dynamic">
                           {m.forme}
                         </span>
                       </td>
-                      <td className="px-3.5 py-3 text-[var(--text-secondary)]">{m.dosage} mg</td>
-                      <td className="px-3.5 py-3 font-medium text-[var(--text-primary)]">
+                      <td className="px-3.5 py-3 text-zinc-600 dark:text-zinc-400 text-dynamic">{m.dosage} mg</td>
+                      <td className="px-3.5 py-3 font-medium text-zinc-900 dark:text-zinc-50 text-dynamic">
                         {Number(m.prix_unitaire).toLocaleString()} Ar
                       </td>
-                      <td className="px-3.5 py-3 font-mono text-[var(--text-secondary)]">{m.seuil_alerte_qte}</td>
-                      <td className="px-3.5 py-3 font-mono text-[var(--text-secondary)]">{m.seuil_alerte_peremption}j</td>
+                      <td className="px-3.5 py-3 font-mono text-zinc-600 dark:text-zinc-400 text-dynamic">{m.seuil_alerte_qte}</td>
+                      <td className="px-3.5 py-3 font-mono text-zinc-600 dark:text-zinc-400 text-dynamic">{m.seuil_alerte_peremption}j</td>
                       {canEdit && (
                         <td className="px-3.5 py-3">
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => openEdit(m)}
-                              className="w-[30px] h-[30px] flex items-center justify-center rounded-[7px] cursor-pointer border-none"
-                              style={{ background: C.orangeSoft, border: `0.5px solid ${C.orangeBdr}` }}
+                              className="w-7 h-7 flex items-center justify-center rounded-md cursor-pointer border border-orange-200 dark:border-orange-900/30 bg-orange-50 dark:bg-orange-950/40 hover:bg-orange-100 dark:hover:bg-orange-950/60 transition-colors"
                               title="Modifier">
-                              <Pencil size={13} color={C.orange} />
+                              <Pencil size={13} className="text-orange-600 dark:text-orange-400" />
                             </button>
                             {isAdmin && !drawerOpen && (
                               <button
                                 onClick={() => setConfirmDel(m)}
-                                className="w-[30px] h-[30px] flex items-center justify-center rounded-[7px] cursor-pointer border-none"
-                                style={{ background: C.redSoft, border: `0.5px solid ${C.redBdr}` }}
+                                className="w-7 h-7 flex items-center justify-center rounded-md cursor-pointer border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-950/60 transition-colors"
                                 title="Supprimer">
-                                <Trash2 size={13} color={C.red} />
+                                <Trash2 size={13} className="text-red-500 dark:text-red-400" />
                               </button>
                             )}
                           </div>
@@ -334,49 +298,42 @@ export default function MedicamentsPage() {
             )}
           </div>
 
-          <div className="px-5 py-3 flex items-center justify-between shrink-0"
-               style={{ borderTop: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-            <span className="text-dynamic text-[var(--text-muted)]">
-              <span className="font-medium text-[var(--text-primary)]">{displayed.length}</span> médicament(s)
+          <div className="px-5 py-3 flex items-center justify-between shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            <span className="text-dynamic text-zinc-500 dark:text-zinc-400">
+              <span className="font-semibold text-zinc-900 dark:text-zinc-50 text-dynamic">{displayed.length}</span> médicament(s)
             </span>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: C.green }} />
-              <span className="text-dynamic text-[var(--text-muted)]">Synchronisé</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-dynamic text-zinc-500 dark:text-zinc-400">Synchronisé</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Drawer formulaire ── */}
-      <div className="shrink-0 flex flex-col transition-all duration-300 ease-in-out overflow-hidden"
-           style={{
-             width: drawerOpen ? '360px' : '0px',
-             borderLeft: drawerOpen ? '0.5px solid var(--border)' : 'none',
-             background: 'var(--bg-content)',
-           }}>
+      <div className={`shrink-0 flex flex-col transition-all duration-300 ease-in-out overflow-hidden bg-white dark:bg-zinc-950 ${
+             drawerOpen ? 'w-[360px] border-l border-zinc-200 dark:border-zinc-800' : 'w-0'
+           }`}>
         <div className="w-[360px] flex flex-col h-full">
 
           {/* Drawer header */}
-          <div className="px-5 py-4 flex items-center justify-between shrink-0"
-               style={{ borderBottom: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
+          <div className="px-5 py-4 flex items-center justify-between shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-[9px] flex items-center justify-center"
-                   style={{ background: C.greenSoft, border: `0.5px solid ${C.greenBdr}` }}>
-                <Pill size={18} color={C.green} />
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/30">
+                <Pill size={18} className="text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
-                <h2 className="text-dynamic font-medium text-[var(--text-primary)]">
+                <h2 className="text-dynamic font-semibold text-zinc-900 dark:text-zinc-50">
                   {isEdit ? `Modifier : ${selected?.nom}` : 'Nouveau médicament'}
                 </h2>
-                <p className="text-dynamic text-[var(--text-muted)] mt-0.5">
+                <p className="text-dynamic text-zinc-500 dark:text-zinc-400 mt-0.5">
                   {isEdit ? 'Édition du médicament' : 'Ajouter un médicament'}
                 </p>
               </div>
             </div>
             <button
               onClick={closeDrawer}
-              className="w-8 h-8 rounded-[8px] flex items-center justify-center cursor-pointer border-none"
-              style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)' }}>
+              className="w-8 h-8 rounded-md flex items-center justify-center cursor-pointer border-none bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 transition-colors">
               <X size={15} />
             </button>
           </div>
@@ -384,116 +341,107 @@ export default function MedicamentsPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
 
-            <Field label="Code CIP" error={errors.code_cip} icon={<Hash size={13} />}>
+            <Field label="Code CIP" icon={<Hash size={13} />}>
               <input
-                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
-                style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.code_cip ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
+                className={`w-full pl-8 pr-3 py-2.5 text-dynamic bg-zinc-50 dark:bg-zinc-900 rounded-lg outline-none border transition-colors text-zinc-900 dark:text-zinc-50 ${
+                  errors.code_cip ? 'border-red-500 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 dark:focus:border-emerald-500'
+                }`}
                 placeholder="3400935514688"
                 value={form.code_cip}
                 onChange={e => set('code_cip', e.target.value)}
-                onFocus={e => e.target.style.borderColor = C.green}
-                onBlur={e  => e.target.style.borderColor = errors.code_cip ? C.red : 'var(--border)'}
               />
               {errors.code_cip && <Err>{errors.code_cip}</Err>}
             </Field>
 
-            <Field label="Nom" error={errors.nom} icon={<Tag size={13} />}>
+            <Field label="Nom" icon={<Tag size={13} />}>
               <input
-                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
-                style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.nom ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
+                className={`w-full pl-8 pr-3 py-2.5 text-dynamic bg-zinc-50 dark:bg-zinc-900 rounded-lg outline-none border transition-colors text-zinc-900 dark:text-zinc-50 ${
+                  errors.nom ? 'border-red-500 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 dark:focus:border-emerald-500'
+                }`}
                 placeholder="Paracétamol 500mg"
                 value={form.nom}
                 onChange={e => set('nom', e.target.value)}
-                onFocus={e => e.target.style.borderColor = C.green}
-                onBlur={e  => e.target.style.borderColor = errors.nom ? C.red : 'var(--border)'}
               />
               {errors.nom && <Err>{errors.nom}</Err>}
             </Field>
 
-            <Field label="Forme" error={errors.forme} icon={<FlaskConical size={13} />}>
+            <Field label="Forme" icon={<FlaskConical size={13} />}>
               <select
-                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
-                style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.forme ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
+                className={`w-full pl-8 pr-3 py-2.5 text-dynamic bg-zinc-50 dark:bg-zinc-900 rounded-lg outline-none border transition-colors text-zinc-900 dark:text-zinc-50 ${
+                  errors.forme ? 'border-red-500 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 dark:focus:border-emerald-500'
+                }`}
                 value={form.forme}
-                onChange={e => set('forme', e.target.value)}
-                onFocus={e => e.target.style.borderColor = C.green}
-                onBlur={e  => e.target.style.borderColor = errors.forme ? C.red : 'var(--border)'}>
+                onChange={e => set('forme', e.target.value)}>
                 <option value="">-- Choisir --</option>
                 {FORMES.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
               {errors.forme && <Err>{errors.forme}</Err>}
             </Field>
 
-            <Field label="Dosage (mg)" error={errors.dosage} icon={<Gauge size={13} />}>
+            <Field label="Dosage (mg)" icon={<Gauge size={13} />}>
               <input
                 type="number"
-                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
-                style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.dosage ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
+                className={`w-full pl-8 pr-3 py-2.5 text-dynamic bg-zinc-50 dark:bg-zinc-900 rounded-lg outline-none border transition-colors text-zinc-900 dark:text-zinc-50 ${
+                  errors.dosage ? 'border-red-500 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 dark:focus:border-emerald-500'
+                }`}
                 placeholder="500"
-                value={form.dosage}
+                value={form.dosage} min={0}
                 onChange={e => set('dosage', e.target.value)}
-                onFocus={e => e.target.style.borderColor = C.green}
-                onBlur={e  => e.target.style.borderColor = errors.dosage ? C.red : 'var(--border)'}
               />
               {errors.dosage && <Err>{errors.dosage}</Err>}
             </Field>
 
-            <Field label="Prix (Ar)" error={errors.prix_unitaire} icon={<Coins size={13} />}>
+            <Field label="Prix (Ar)" icon={<Coins size={13} />}>
               <input
                 type="number"
-                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
-                style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.prix_unitaire ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
-                placeholder="250"
+                className={`w-full pl-8 pr-3 py-2.5 text-dynamic bg-zinc-50 dark:bg-zinc-900 rounded-lg outline-none border transition-colors text-zinc-900 dark:text-zinc-50 ${
+                  errors.prix_unitaire ? 'border-red-500 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 dark:focus:border-emerald-500'
+                }`}
+                placeholder="250" min={0}
                 value={form.prix_unitaire}
                 onChange={e => set('prix_unitaire', e.target.value)}
-                onFocus={e => e.target.style.borderColor = C.green}
-                onBlur={e  => e.target.style.borderColor = errors.prix_unitaire ? C.red : 'var(--border)'}
               />
               {errors.prix_unitaire && <Err>{errors.prix_unitaire}</Err>}
             </Field>
 
-            <Field label="Seuil alerte stock" error={errors.seuil_alerte_qte} icon={<BellDot size={13} />}>
+            <Field label="Seuil alerte stock" icon={<BellDot size={13} />}>
               <input
                 type="number"
-                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
-                style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.seuil_alerte_qte ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
-                placeholder="50"
+                className={`w-full pl-8 pr-3 py-2.5 text-dynamic bg-zinc-50 dark:bg-zinc-900 rounded-lg outline-none border transition-colors text-zinc-900 dark:text-zinc-50 ${
+                  errors.seuil_alerte_qte ? 'border-red-500 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 dark:focus:border-emerald-500'
+                }`}
+                placeholder="50" min={0}
                 value={form.seuil_alerte_qte}
                 onChange={e => set('seuil_alerte_qte', e.target.value)}
-                onFocus={e => e.target.style.borderColor = C.green}
-                onBlur={e  => e.target.style.borderColor = errors.seuil_alerte_qte ? C.red : 'var(--border)'}
               />
               {errors.seuil_alerte_qte && <Err>{errors.seuil_alerte_qte}</Err>}
             </Field>
 
-            <Field label="Seuil péremption (jours)" error={errors.seuil_alerte_peremption} icon={<CalendarClock size={13} />}>
+            <Field label="Seuil péremption (jours)" icon={<CalendarClock size={13} />}>
               <input
                 type="number"
-                className="w-full pl-8 pr-3 py-2.5 text-dynamic rounded-[8px] outline-none"
-                style={{ background: 'var(--bg-sidebar)', border: `0.5px solid ${errors.seuil_alerte_peremption ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
-                placeholder="30"
+                className={`w-full pl-8 pr-3 py-2.5 text-dynamic bg-zinc-50 dark:bg-zinc-900 rounded-lg outline-none border transition-colors text-zinc-900 dark:text-zinc-50 ${
+                  errors.seuil_alerte_peremption ? 'border-red-500 focus:border-red-500' : 'border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 dark:focus:border-emerald-500'
+                }`}
+                placeholder="30" min={0}
                 value={form.seuil_alerte_peremption}
                 onChange={e => set('seuil_alerte_peremption', e.target.value)}
-                onFocus={e => e.target.style.borderColor = C.green}
-                onBlur={e  => e.target.style.borderColor = errors.seuil_alerte_peremption ? C.red : 'var(--border)'}
               />
               {errors.seuil_alerte_peremption && <Err>{errors.seuil_alerte_peremption}</Err>}
             </Field>
 
             {/* Submit */}
-            <div className="mt-auto pt-4 flex gap-2.5" style={{ borderTop: '0.5px solid var(--border)' }}>
+            <div className="mt-auto pt-4 flex gap-2.5 border-t border-zinc-200 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={closeDrawer}
-                className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium cursor-pointer"
-                style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
+                className="flex-1 py-2.5 rounded-lg text-dynamic font-medium cursor-pointer bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700/50 transition-colors">
                 Annuler
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
-                style={{ background: C.greenDark }}>
+                className="flex-1 py-2.5 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 transition-colors">
                 {saving
                   ? <><Loader2 size={13} className="animate-spin" /> Traitement…</>
                   : isEdit ? 'Enregistrer' : 'Créer'}
@@ -505,31 +453,26 @@ export default function MedicamentsPage() {
 
       {/* ── Modal Suppression ── */}
       {confirmDel && (
-        <div className="fixed inset-0 flex items-center justify-center z-[1000]"
-             style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)' }}>
-          <div className="text-center max-w-[380px] w-[90%] px-10 py-10 rounded-2xl"
-               style={{ background: 'var(--bg-content)', border: '0.5px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
-                 style={{ background: C.redSoft, border: `0.5px solid ${C.redBdr}` }}>
-              <Trash2 size={24} color={C.red} />
+        <div className="fixed inset-0 flex items-center justify-center z-[1000] bg-black/50 backdrop-blur-sm">
+          <div className="text-center max-w-[380px] w-[90%] px-8 py-8 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/30">
+              <Trash2 size={24} className="text-red-500 dark:text-red-400" />
             </div>
-            <h3 className="font-medium text-dynamic mb-2 text-[var(--text-primary)]">Supprimer ce médicament ?</h3>
-            <p className="text-dynamic leading-relaxed mb-8 text-[var(--text-muted)]">
-              <strong style={{ color: 'var(--text-primary)' }}>{confirmDel?.nom}</strong> sera définitivement retiré.
+            <h3 className="font-semibold text-lg mb-2 text-zinc-900 dark:text-zinc-50 text-dynamic">Supprimer ce médicament ?</h3>
+            <p className="text-dynamic leading-relaxed mb-6 text-zinc-500 dark:text-zinc-400">
+              <strong className="text-zinc-900 dark:text-zinc-50 text-dynamic">{confirmDel?.nom}</strong> sera définitivement retiré.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDel(null)}
                 disabled={saving}
-                className="flex-1 py-3 rounded-[10px] font-medium text-dynamic cursor-pointer"
-                style={{ background: 'var(--bg-hover)', border: '0.5px solid var(--border)', color: 'var(--text-muted)' }}>
+                className="flex-1 py-3 rounded-xl font-medium text-dynamic cursor-pointer bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 transition-colors">
                 Annuler
               </button>
               <button
                 onClick={handleDelete}
                 disabled={saving}
-                className="flex-1 py-3 rounded-[10px] font-medium text-dynamic text-white cursor-pointer border-none flex items-center justify-center disabled:opacity-60"
-                style={{ background: C.red }}>
+                className="flex-1 py-3 rounded-xl font-medium text-dynamic text-white cursor-pointer border-none flex items-center justify-center bg-red-600 hover:bg-red-700 disabled:opacity-60 transition-colors">
                 {saving ? <Loader2 size={14} className="animate-spin" /> : 'Supprimer'}
               </button>
             </div>
@@ -540,28 +483,12 @@ export default function MedicamentsPage() {
   );
 }
 
-function StatCard({ icon, iconBg, label, value, valueColor }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl"
-         style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}>
-      <div className="w-9 h-9 rounded-[8px] flex items-center justify-center shrink-0"
-           style={{ background: iconBg }}>
-        {icon}
-      </div>
-      <div>
-        <div className="text-dynamic font-medium leading-none" style={{ color: valueColor }}>{value}</div>
-        <div className="text-dynamic uppercase tracking-wide mt-1 text-[var(--text-muted)]">{label}</div>
-      </div>
-    </div>
-  );
-}
-
 function Field({ label, icon, children }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-dynamic font-medium uppercase tracking-wide text-[var(--text-muted)]">{label}</label>
+      <label className="text-dynamic font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{label}</label>
       <div className="relative">
-        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">{icon}</span>
+        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">{icon}</span>
         {children}
       </div>
     </div>
@@ -569,5 +496,5 @@ function Field({ label, icon, children }) {
 }
 
 function Err({ children }) {
-  return <span className="text-dynamic" style={{ color: C.red }}>{children}</span>;
+  return <span className="text-dynamic text-red-500 font-medium mt-1 inline-block">{children}</span>;
 }

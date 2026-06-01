@@ -7,7 +7,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--bg-app)]">
+    <div className="flex h-screen overflow-hidden">
 
       {/* ── Sidebar gauche ── */}
       <Sidebar

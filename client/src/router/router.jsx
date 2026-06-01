@@ -44,7 +44,7 @@ const router = createBrowserRouter([
 
           // ── Pharmacien + Admin uniquement ──
           {
-            element: <PrivateRoute roles={['admin', 'pharmacien']} />,
+            element: <PrivateRoute roles={['admin', 'pharmacien', 'user']} />,
             children: [
               { path: '/medicaments', element: <Suspense fallback={<Loader />}><MedicamentsPage/></Suspense>},
               { path: '/lots',        element: <Suspense fallback={<Loader />}><LotsPage /></Suspense> },
@@ -52,8 +52,8 @@ const router = createBrowserRouter([
               { path: '/users',       element: <Suspense fallback={<Loader />}><Users /></Suspense> },
               { path: '/commandes',   element: <Suspense fallback={<Loader />}><CommandesPage /></Suspense> },
               { path: '/history',     element: <Suspense fallback={<Loader />}><HistoriquePage /></Suspense> },
-              { path: '/profil',     element: <Suspense fallback={<Loader />}><ProfilePage /></Suspense> },
-              { path: '/parametres',     element: <Suspense fallback={<Loader />}><SettingsPage /></Suspense> },
+              { path: '/profil',      element: <Suspense fallback={<Loader />}><ProfilePage /></Suspense> },
+              { path: '/parametres',  element: <Suspense fallback={<Loader />}><SettingsPage /></Suspense> },
             ],
           },
         ],

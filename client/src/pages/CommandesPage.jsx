@@ -9,20 +9,10 @@ import {
 } from 'lucide-react';
 
 const STATUT_META = {
-  brouillon:  { label: 'Brouillon',  bg: '#f3f4f6', color: '#6b7280', Icon: FileEdit     },
-  en_attente: { label: 'En attente', bg: '#fef9c3', color: '#854d0e', Icon: Hourglass    },
-  validee:    { label: 'Validée',    bg: '#dcfce7', color: '#166534', Icon: PackageCheck },
-  rejetee:    { label: 'Rejetée',    bg: '#fee2e2', color: '#991b1b', Icon: XCircle      },
-};
-
-const C = {
-  green:      '#22c55e',
-  greenDark:  '#16a34a',
-  greenSoft:  'rgba(34,197,94,0.10)',
-  greenBdr:   'rgba(34,197,94,0.25)',
-  red:        '#ef4444',
-  redSoft:    'rgba(239,68,68,0.10)',
-  redBdr:     'rgba(239,68,68,0.25)',
+  brouillon:  { label: 'Brouillon',  badge: 'bg-gray-100 text-gray-600 dark:bg-neutral-800 dark:text-neutral-400', Icon: FileEdit },
+  en_attente: { label: 'En attente', badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/30', Icon: Hourglass },
+  validee:    { label: 'Validée',    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/30', Icon: PackageCheck },
+  rejetee:    { label: 'Rejetée',    badge: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/30', Icon: XCircle },
 };
 
 export default function CommandesPage() {
@@ -38,7 +28,6 @@ export default function CommandesPage() {
   const [toast,        setToast]      = useState(null);
   const [medicaments,  setMeds]       = useState([]);
   
-  // ── ÉTATS POUR LE PANIER LOCAL ──
   const [panier,       setPanier]     = useState([]); 
   const [itemForm,     setItemForm]   = useState({ id_medoc: '', quantite: '' }); 
   const [formErr,      setFormErr]    = useState({});
@@ -65,7 +54,6 @@ export default function CommandesPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // ── LOGIQUE DU PANIER VERT ──
   const handleAddToPanier = () => {
     const errors = {};
     if (!itemForm.id_medoc) errors.id_medoc = 'Requis';
@@ -126,7 +114,6 @@ export default function CommandesPage() {
     }
   };
 
-  // ── ACTIONS STANDARDS ──
   const handleEnvoyer = async () => {
     setSaving(true);
     try { await envoyer(selected.id_commande); closeSidebar(); showToast("Commande envoyée"); }
@@ -157,11 +144,11 @@ export default function CommandesPage() {
   };
 
   const CONFIGS = {
-    create:  { title: 'Nouvelle commande',      icon: <Plus size={16} color={C.greenDark} />,    accent: C.greenDark, accentSoft: C.greenSoft, accentBdr: C.greenBdr, confirmLabel: 'Créer la commande',    onConfirm: handleCreateCommande },
-    envoyer: { title: 'Envoyer la commande',    icon: <Send size={16} color={C.greenDark} />,    accent: C.greenDark, accentSoft: C.greenSoft, accentBdr: C.greenBdr, confirmLabel: 'Envoyer',                onConfirm: handleEnvoyer },
-    delete:  { title: 'Supprimer le brouillon', icon: <Trash2 size={16} color={C.red} />,        accent: C.red,       accentSoft: C.redSoft,   accentBdr: C.redBdr,   confirmLabel: 'Supprimer',              onConfirm: handleDelete  },
-    valider: { title: 'Valider la commande',    icon: <CheckCircle2 size={16} color={C.greenDark}/>, accent: C.greenDark, accentSoft: C.greenSoft, accentBdr: C.greenBdr, confirmLabel: 'Confirmer la validation', onConfirm: handleValider },
-    rejeter: { title: 'Rejeter la commande',    icon: <XCircle size={16} color={C.red} />,       accent: C.red,       accentSoft: C.redSoft,   accentBdr: C.redBdr,   confirmLabel: 'Confirmer le rejet',     onConfirm: handleRejeter },
+    create:  { title: 'Nouvelle commande',      icon: <Plus size={16} />,     colorType: 'emerald', confirmLabel: 'Créer la commande',    onConfirm: handleCreateCommande },
+    envoyer: { title: 'Envoyer la commande',    icon: <Send size={14} />,     colorType: 'emerald', confirmLabel: 'Envoyer',                onConfirm: handleEnvoyer },
+    delete:  { title: 'Supprimer le brouillon', icon: <Trash2 size={15} />,   colorType: 'red',     confirmLabel: 'Supprimer',              onConfirm: handleDelete  },
+    valider: { title: 'Valider la commande',    icon: <CheckCircle2 size={15} />, colorType: 'emerald', confirmLabel: 'Confirmer la validation', onConfirm: handleValider },
+    rejeter: { title: 'Rejeter la commande',    icon: <XCircle size={15} />,    colorType: 'red',     confirmLabel: 'Confirmer le rejet',     onConfirm: handleRejeter },
   };
   const cfg = sidebar ? CONFIGS[sidebar] : null;
 
@@ -172,14 +159,17 @@ export default function CommandesPage() {
   });
 
   return (
-    <div className="h-screen flex overflow-hidden rounded-xl border border-white/[0.05] shadow-2xl">
+    <div className="h-screen flex overflow-hidden rounded-xl border border-gray-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
 
       {/* ── Toast ── */}
       {toast && (
-        <div className="fixed top-5 right-5 z-[2000] text-white px-5 py-3 rounded-[10px] font-semibold text-dynamic shadow-lg flex items-center gap-2"
-          style={{ background: toast.type === 'error' ? C.red : C.greenDark }}>
+        <div className={`fixed top-5 right-5 z-[2000] text-white px-5 py-3 rounded-xl font-semibold shadow-lg flex items-center gap-2 text-dynamic border transition-all ${
+          toast.type === 'error' ? 'bg-red-600 border-red-500' : 'bg-emerald-700 border-emerald-600'
+        }`}>
           {toast.msg}
-          <button onClick={() => setToast(null)} className="bg-transparent border-none text-white cursor-pointer flex items-center"><X size={14} /></button>
+          <button onClick={() => setToast(null)} className="bg-transparent border-none text-white cursor-pointer flex items-center p-0 ml-1 hover:opacity-80">
+            <X size={14} />
+          </button>
         </div>
       )}
 
@@ -189,22 +179,20 @@ export default function CommandesPage() {
           <>
             <div className="flex items-center justify-between flex-wrap gap-3 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0"
-                     style={{ background: C.greenSoft, border: `0.5px solid ${C.greenBdr}` }}>
-                  <ClipboardList size={20} color={C.green} />
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-emerald-50 border border-emerald-200/60 dark:bg-emerald-950/40 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400">
+                  <ClipboardList size={20} />
                 </div>
                 <div>
-                  <h1 className="text-dynamic font-medium tracking-tight leading-tight text-[var(--text-primary)]">
-                    Mes <span style={{ color: C.green }}>commandes</span>
+                  <h1 className="text-dynamic font-medium tracking-tight leading-tight text-gray-900 dark:text-white">
+                    Mes <span className="text-emerald-700 dark:text-emerald-400">commandes</span>
                   </h1>
-                  <p className="text-dynamic text-[var(--text-muted)] mt-0.5">Gérez vos paniers d'approvisionnement médicaux</p>
+                  <p className="text-dynamic text-gray-500 dark:text-neutral-400 mt-0.5">Gérez vos paniers d'approvisionnement médicaux</p>
                 </div>
               </div>
               {!sidebar && (
                 <button
                   onClick={() => openSidebar('create')}
-                  className="flex items-center gap-2 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white border-none cursor-pointer hover:opacity-90 transition-opacity"
-                  style={{ background: C.greenDark }}
+                  className="flex items-center gap-2 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white border-none cursor-pointer bg-emerald-700 hover:bg-emerald-800 transition-colors"
                 >
                   <Plus size={15} /> Nouvelle commande
                 </button>
@@ -212,23 +200,27 @@ export default function CommandesPage() {
             </div>
 
             <div className="flex gap-2 flex-wrap shrink-0">
-              {['', 'brouillon', 'en_attente', 'validee', 'rejetee'].map(s => (
-                <button key={s} onClick={() => setFiltre(s)} className="px-4 py-1.5 rounded-full text-dynamic font-medium transition-all border cursor-pointer"
-                  style={{
-                    background:  filtreStatut === s ? C.greenDark : 'var(--bg-sidebar)',
-                    color:       filtreStatut === s ? '#fff'       : 'var(--text-muted)',
-                    borderColor: filtreStatut === s ? C.greenDark  : 'var(--border)',
-                  }}>{s === '' ? 'Toutes' : STATUT_META[s]?.label}</button>
-              ))}
+              {['', 'brouillon', 'en_attente', 'validee', 'rejetee'].map(s => {
+                const isSelected = filtreStatut === s;
+                return (
+                  <button key={s} onClick={() => setFiltre(s)} className={`px-4 py-1.5 rounded-full text-dynamic font-medium transition-all border cursor-pointer ${
+                    isSelected 
+                      ? 'bg-emerald-700 text-white border-transparent' 
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700/70'
+                  }`}>
+                    {s === '' ? 'Toutes' : STATUT_META[s]?.label}
+                  </button>
+                );
+              })}
             </div>
 
             <CommandeTable commandes={listeFiltrée} loading={loading} error={error}
               renderActions={(c) => c.statut === 'brouillon' ? (
                 <div className="flex gap-1.5">
-                  <ActionBtn icon={<Send size={13} />}   label="Envoyer"   color={C.greenDark} onClick={() => openSidebar('envoyer', c)} />
-                  <ActionBtn icon={<Trash2 size={13} />} label="Supprimer" color={C.red}       onClick={() => openSidebar('delete', c)} />
+                  <ActionBtn type="emerald" icon={<Send size={13} />} label="Envoyer" onClick={() => openSidebar('envoyer', c)} />
+                  <ActionBtn type="red" icon={<Trash2 size={13} />} label="Supprimer" onClick={() => openSidebar('delete', c)} />
                 </div>
-              ) : <span className="text-dynamic text-[var(--text-muted)] italic">Lecture seule</span>}
+              ) : <span className="text-dynamic text-gray-400 dark:text-neutral-500 italic">Lecture seule</span>}
             />
           </>
         )}
@@ -237,13 +229,15 @@ export default function CommandesPage() {
         {isAdmin && (
           <>
             <div className="flex items-center justify-between flex-wrap gap-3 shrink-0">
-              <h1 className="text-dynamic font-medium text-[var(--text-primary)]">Commandes <span style={{ color: C.green }}>en attente</span></h1>
+              <h1 className="text-dynamic font-medium text-gray-900 dark:text-white">
+                Commandes <span className="text-emerald-700 dark:text-emerald-400">en attente</span>
+              </h1>
             </div>
             <CommandeTable commandes={listeFiltrée} loading={loading} error={error} showUser
               renderActions={(c) => (
                 <div className="flex gap-1.5">
-                  <ActionBtn icon={<CheckCircle2 size={13} />} label="Valider" color={C.greenDark} onClick={() => openSidebar('valider', c)} disabled={saving} />
-                  <ActionBtn icon={<XCircle size={13} />}      label="Rejeter" color={C.red}       onClick={() => openSidebar('rejeter', c)} disabled={saving} />
+                  <ActionBtn type="emerald" icon={<CheckCircle2 size={13} />} label="Valider" onClick={() => openSidebar('valider', c)} disabled={saving} />
+                  <ActionBtn type="red" icon={<XCircle size={13} />} label="Rejeter" onClick={() => openSidebar('rejeter', c)} disabled={saving} />
                 </div>
               )}
             />
@@ -252,81 +246,94 @@ export default function CommandesPage() {
       </div>
 
       {/* ── SIDEBAR DROITE (PANIER / CONFIRMATIONS) ── */}
-      <div className="shrink-0 flex flex-col transition-all duration-300 ease-in-out overflow-hidden"
-        style={{ width: sidebar ? '380px' : '0px', borderLeft: sidebar ? '0.5px solid var(--border)' : 'none', background: 'var(--bg-content)' }}>
+      <div className={`shrink-0 flex flex-col transition-all duration-300 ease-in-out overflow-hidden border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 ${
+        sidebar ? 'w-[380px] border-l' : 'w-0 border-l-0'
+      }`}>
         <div className="w-[380px] flex flex-col h-full">
           {cfg && (
             <>
               {/* Header */}
-              <div className="px-5 py-4 flex items-center justify-between shrink-0" style={{ borderBottom: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
+              <div className="px-5 py-4 flex items-center justify-between shrink-0 border-b border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: cfg.accentSoft, border: `0.5px solid ${cfg.accentBdr}` }}>{cfg.icon}</div>
-                  <h2 className="text-dynamic font-medium text-[var(--text-primary)]">{cfg.title}</h2>
+                  <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 border ${
+                    cfg.colorType === 'emerald' 
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900/30' 
+                      : 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/30'
+                  }`}>{cfg.icon}</div>
+                  <h2 className="text-dynamic font-medium text-gray-900 dark:text-white">{cfg.title}</h2>
                 </div>
-                <button onClick={closeSidebar} className="w-8 h-8 rounded-[8px] flex items-center justify-center cursor-pointer border-none" style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)' }}><X size={15} /></button>
+                <button onClick={closeSidebar} className="w-8 h-8 rounded-md flex items-center justify-center cursor-pointer border-none bg-gray-100 text-gray-400 dark:bg-neutral-800 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300 transition-colors"><X size={15} /></button>
               </div>
 
-              <div style={{ height: '3px', background: cfg.accent, opacity: 0.7 }} />
+              <div className={`h-[3px] opacity-70 ${cfg.colorType === 'emerald' ? 'bg-emerald-700' : 'bg-red-500'}`} />
 
               {/* Body */}
               <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5">
 
-                {/* 🛒 COMPOSANT PANIER LOCAL DANS LA SIDEBAR */}
+                {/* 🛒 PANIER LOCAL */}
                 {sidebar === 'create' && (
                   <div className="flex flex-col gap-4">
                     
-                    {/* Bloc d'ajout d'une ligne */}
-                    <div className="p-3.5 rounded-xl border border-dashed flex flex-col gap-3 bg-[var(--bg-sidebar)]" style={{ borderColor: 'var(--border)' }}>
-                      <p className="text-dynamic font-medium text-[var(--text-primary)] flex items-center gap-1.5">
-                        <ShoppingCart size={14} color={C.greenDark} /> Sélectionner un article
+                    {/* Formulaire sélection */}
+                    <div className="p-4 rounded-xl border border-dashed border-gray-200 dark:border-neutral-800 flex flex-col gap-3 bg-gray-50/50 dark:bg-neutral-800/20">
+                      <p className="text-dynamic font-medium text-gray-800 dark:text-neutral-200 flex items-center gap-1.5">
+                        <ShoppingCart size={14} className="text-emerald-700 dark:text-emerald-400" /> Sélectionner un article
                       </p>
                       
                       <Field label="Médicament *" error={formErr.id_medoc}>
-                        <select className="w-full px-2.5 py-2 rounded-lg text-dynamic outline-none"
+                        <select 
+                          className={`w-full px-2.5 py-2 rounded-lg text-dynamic bg-white dark:bg-neutral-900 outline-none text-gray-900 dark:text-white border ${
+                            formErr.id_medoc ? 'border-red-500' : 'border-gray-200 dark:border-neutral-800'
+                          }`}
                           value={itemForm.id_medoc}
-                          onChange={e => setItemForm(p => ({ ...p, id_medoc: e.target.value }))}>
+                          onChange={e => setItemForm(p => ({ ...p, id_medoc: e.target.value }))}
+                        >
                           <option value="">-- Choisir --</option>
-                          {medicaments.map(m => <option key={m.id_medoc} value={m.id_medoc}>{m.nom}</option>)}
+                          {medicaments.map(m => (
+                            <option key={m.id_medoc} value={m.id_medoc}>
+                              {m.nom}
+                            </option>
+                          ))}
                         </select>
                       </Field>
 
                       <Field label="Quantité *" error={formErr.quantite}>
-                        <input type="number" min="1" className="w-full px-2.5 py-2 rounded-lg text-dynamic outline-none"
-                          style={{ background: 'var(--bg-content)', border: `0.5px solid ${formErr.quantite ? C.red : 'var(--border)'}`, color: 'var(--text-primary)' }}
+                        <input type="number" min="1" 
+                          className={`w-full px-2.5 py-2 rounded-lg text-dynamic bg-white dark:bg-neutral-900 outline-none text-gray-900 dark:text-white border ${
+                            formErr.quantite ? 'border-red-500' : 'border-gray-200 dark:border-neutral-800'
+                          }`}
                           placeholder="Ex: 50" value={itemForm.quantite}
                           onChange={e => setItemForm(p => ({ ...p, quantite: e.target.value }))}
                         />
                       </Field>
 
-                      <button type="button" onClick={handleAddToPanier} className="w-full mt-1 py-2 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-1 transition-opacity hover:opacity-95"
-                        style={{ background: C.greenDark }}>
+                      <button type="button" onClick={handleAddToPanier} className="w-full mt-1 py-2 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-1 transition-opacity bg-emerald-700 hover:bg-emerald-800">
                         <Plus size={14} /> Ajouter au panier
                       </button>
                     </div>
 
-                    {/* Liste en temps réel des articles du panier */}
+                    {/* Liste des articles du panier */}
                     <div className="flex flex-col gap-2.5 flex-1 min-h-[180px]">
-                      <p className="text-dynamic text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide">
+                      <p className="text-dynamic text-xs font-semibold text-gray-400 dark:text-neutral-500 uppercase tracking-wide">
                         Articles sélectionnés ({panier.length})
                       </p>
                       
                       {panier.length === 0 ? (
-                        <div className="flex-1 border border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center text-[var(--text-muted)] opacity-60" style={{ borderColor: 'var(--border)' }}>
-                          <ShoppingCart size={20} className="mb-1.5" style={{ color: C.greenDark }} />
+                        <div className="flex-1 border border-dashed rounded-xl flex flex-col items-center justify-center p-6 text-center border-gray-200 dark:border-neutral-800 text-gray-400 dark:text-neutral-500 opacity-80">
+                          <ShoppingCart size={20} className="mb-1.5 text-emerald-700 dark:text-emerald-400" />
                           <p className="text-dynamic text-xs">Le panier est vide</p>
                         </div>
                       ) : (
                         <div className="flex flex-col gap-2 max-h-[38vh] overflow-y-auto pr-1">
                           {panier.map((item) => (
-                            <div key={item.id_medoc} className="flex items-center justify-between p-2.5 rounded-lg bg-[var(--bg-sidebar)] border border-[var(--border)]">
+                            <div key={item.id_medoc} className="flex items-center justify-between p-2.5 rounded-lg border bg-gray-50 border-gray-200 dark:bg-neutral-800/40 dark:border-neutral-800">
                               <div className="flex flex-col">
-                                <span className="text-dynamic font-medium text-[var(--text-primary)] text-sm">{item.nom}</span>
-                                <span className="text-dynamic text-xs font-semibold px-2 py-0.5 rounded-md mt-1 self-start" style={{ background: C.greenSoft, color: C.greenDark }}>
+                                <span className="text-dynamic font-medium text-gray-900 dark:text-white">{item.nom}</span>
+                                <span className="text-dynamic text-xs font-semibold px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-900/30 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 mt-1 self-start">
                                   Quantité : {item.quantite}
                                 </span>
                               </div>
                               
-                              {/* Retirer du panier si inutile */}
                               <button type="button" onClick={() => handleRemoveFromPanier(item.id_medoc)}
                                 className="p-2 rounded-md border-none text-red-500 hover:text-red-700 bg-red-500/10 hover:bg-red-500/20 cursor-pointer transition-colors flex items-center justify-center">
                                 <Trash2 size={13} />
@@ -340,31 +347,37 @@ export default function CommandesPage() {
                 )}
 
                 {/* Confirmations Relatives aux Actions standard */}
-                {sidebar === 'envoyer' && <ConfirmCard icon={<Send size={26} color={C.greenDark} />} accent={C.greenDark} accentSoft={C.greenSoft} accentBdr={C.greenBdr} title="Envoyer au traitement ?" desc={`Dossier #${selected?.id_commande}`} note="Inmodifiable après envoi." />}
-                {sidebar === 'delete' && <ConfirmCard icon={<Trash2 size={26} color={C.red} />} accent={C.red} accentSoft={C.redSoft} accentBdr={C.redBdr} title="Supprimer ce brouillon ?" desc={`Dossier #${selected?.id_commande}`} note="Action irréversible." />}
+                {sidebar === 'envoyer' && <ConfirmCard colorType="emerald" icon={<Send size={24} />} title="Envoyer au traitement ?" desc={`Dossier #${selected?.id_commande}`} note="Inmodifiable après envoi." />}
+                {sidebar === 'delete' && <ConfirmCard colorType="red" icon={<Trash2 size={24} />} title="Supprimer ce brouillon ?" desc={`Dossier #${selected?.id_commande}`} note="Action irréversible." />}
                 {sidebar === 'valider' && (
                   <>
-                    <ConfirmCard icon={<CheckCircle2 size={26} color={C.greenDark} />} accent={C.greenDark} accentSoft={C.greenSoft} accentBdr={C.greenBdr} title="Valider la commande globale ?" desc={`Dossier #${selected?.id_commande}`} />
-                    <Field label="Note optionnelle"><textarea rows={3} className="w-full px-3 py-2 rounded-lg text-dynamic bg-[var(--bg-sidebar)] border border-[var(--border)] outline-none" value={motif} onChange={e => setMotif(e.target.value)} /></Field>
+                    <ConfirmCard colorType="emerald" icon={<CheckCircle2 size={24} />} title="Valider la commande globale ?" desc={`Dossier #${selected?.id_commande}`} />
+                    <Field label="Note optionnelle">
+                      <textarea rows={3} className="w-full px-3 py-2 rounded-lg text-dynamic bg-gray-50 text-gray-900 dark:bg-neutral-800 dark:text-white border border-gray-200 dark:border-neutral-800 outline-none focus:border-emerald-600" value={motif} onChange={e => setMotif(e.target.value)} />
+                    </Field>
                   </>
                 )}
                 {sidebar === 'rejeter' && (
                   <>
-                    <ConfirmCard icon={<XCircle size={26} color={C.red} />} accent={C.red} accentSoft={C.redSoft} accentBdr={C.redBdr} title="Refuser la demande ?" desc={`Dossier #${selected?.id_commande}`} />
-                    <Field label="Motif de rejet *" error={motifErr}><textarea rows={3} className="w-full px-3 py-2 rounded-lg text-dynamic bg-[var(--bg-sidebar)] border border-[var(--border)] outline-none" value={motif} onChange={e => { setMotif(e.target.value); setMotifErr(''); }} /></Field>
+                    <ConfirmCard colorType="red" icon={<XCircle size={24} />} title="Refuser la demande ?" desc={`Dossier #${selected?.id_commande}`} />
+                    <Field label="Motif de rejet *" error={motifErr}>
+                      <textarea rows={3} className="w-full px-3 py-2 rounded-lg text-dynamic bg-gray-50 text-gray-900 dark:bg-neutral-800 dark:text-white border border-gray-200 dark:border-neutral-800 outline-none focus:border-red-500" value={motif} onChange={e => { setMotif(e.target.value); setMotifErr(''); }} />
+                    </Field>
                   </>
                 )}
               </div>
 
               {/* Footer Panel */}
-              <div className="px-5 py-4 flex gap-2.5 shrink-0" style={{ borderTop: '0.5px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-                <button onClick={closeSidebar} className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium cursor-pointer bg-[var(--bg-hover)] border border-[var(--border)] text-[var(--text-muted)]">Annuler</button>
-                <button onClick={cfg.onConfirm} disabled={saving || (sidebar === 'create' && panier.length === 0)}
-                  className="flex-1 py-2.5 rounded-[8px] text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
-                  style={{ background: cfg.accent }}>
-                  {saving ? <><Loader2 size={13} className="animate-spin" /> Process...</> : cfg.confirmLabel}
-                </button>
-              </div>
+              {/* Footer Panel */}
+<div className="px-5 py-4 flex gap-2.5 shrink-0 border-t border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900">
+  <button onClick={closeSidebar} className="flex-1 py-2.5 rounded-lg text-dynamic font-medium cursor-pointer bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700 transition-colors">Annuler</button>
+  <button onClick={cfg.onConfirm} disabled={saving || (sidebar === 'create' && panier.length === 0)}
+    className={`flex-1 py-2.5 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 transition-all ${
+      cfg.colorType === 'emerald' ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-red-600 hover:bg-red-700'
+    }`}>
+    {saving ? <><Loader2 size={13} className="animate-spin" /> Process...</> : cfg.confirmLabel}
+  </button>
+</div>
             </>
           )}
         </div>
@@ -373,59 +386,89 @@ export default function CommandesPage() {
   );
 }
 
-function ConfirmCard({ icon, accent, accentSoft, accentBdr, title, desc, note }) {
+function ConfirmCard({ colorType, icon, title, desc, note }) {
+  const isEmerald = colorType === 'emerald';
   return (
-    <div className="rounded-xl p-4 flex gap-4 items-start border" style={{ background: accentSoft, borderColor: accentBdr }}>
-      <div className="w-11 h-11 rounded-[10px] flex items-center justify-center shrink-0 bg-[var(--bg-content)] border" style={{ borderColor: accentBdr }}>{icon}</div>
-      <div className="flex flex-col gap-0.5">
-        <p className="text-dynamic font-medium text-[var(--text-primary)]">{title}</p>
-        <p className="text-dynamic text-[var(--text-secondary)]">{desc}</p>
-        {note && <p className="text-dynamic mt-1 text-xs italic" style={{ color: accent }}>{note}</p>}
+    <div className={`rounded-xl p-4 flex gap-4 items-start border ${
+      isEmerald 
+        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-900/40 dark:text-emerald-400' 
+        : 'bg-red-50/60 border-red-200 text-red-800 dark:bg-red-950/20 dark:border-red-900/40 dark:text-red-400'
+    }`}>
+      <div className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 border bg-white dark:bg-neutral-900 border-inherit">{icon}</div>
+      <div className="flex flex-col gap-0.5 text-dynamic">
+        <p className="font-medium text-gray-900 dark:text-white">{title}</p>
+        <p className="text-gray-600 dark:text-neutral-400">{desc}</p>
+        {note && <p className={`mt-1 text-xs italic ${isEmerald ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-500'}`}>{note}</p>}
       </div>
     </div>
   );
 }
 
 function CommandeTable({ commandes, loading, error, renderActions, showUser = false }) {
-  if (loading) return <div className="py-16 text-center"><Loader2 className="animate-spin mx-auto mb-2" size={24} style={{ color: '#16a34a' }} /><p className="text-dynamic text-[var(--text-muted)]">Chargement...</p></div>;
-  if (error) return <div className="px-4 py-3 rounded-lg text-dynamic bg-red-500/10 text-red-500 border border-red-500/20">{error}</div>;
-  if (commandes.length === 0) return <div className="py-16 text-center rounded-xl border border-[var(--border)]"><p className="text-dynamic text-[var(--text-muted)]">Aucune commande répertoriée</p></div>;
+  if (loading) return <div className="py-16 text-center"><Loader2 className="animate-spin mx-auto mb-2 text-emerald-700 dark:text-emerald-400" size={24} /><p className="text-dynamic text-gray-500 dark:text-neutral-400">Chargement...</p></div>;
+  if (error) return <div className="px-4 py-3 rounded-lg text-dynamic bg-red-50 text-red-500 border border-red-200 dark:bg-red-950/20 dark:border-red-900/30">{error}</div>;
+  if (commandes.length === 0) return <div className="py-16 text-center rounded-xl border border-gray-200 dark:border-neutral-800"><p className="text-dynamic text-gray-400 dark:text-neutral-500">Aucune commande répertoriée</p></div>;
 
-  const cols = ['Détails Commande', showUser && 'Demandeur', 'Date', 'Statut', 'Actions'].filter(Boolean);
+  const cols = ['Détails Commande', showUser && 'Demandeur', 'Date', 'Statut' ,'Prix total', 'Actions'].filter(Boolean);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 overflow-hidden rounded-xl border border-[var(--border)]">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden rounded-xl border border-gray-200 dark:border-neutral-800">
       <div className="flex-1 overflow-y-auto">
-        <table className="w-full text-left text-dynamic border-collapse">
+        <table className="w-full text-left border-collapse text-dynamic">
           <thead>
-            <tr style={{ background: 'var(--bg-sidebar)', borderBottom: '0.5px solid var(--border)', position: 'sticky', top: 0 }}>
-              {cols.map(h => <th key={h} className="px-4 py-3 text-dynamic font-medium uppercase text-[var(--text-muted)]">{h}</th>)}
+            <tr className="bg-gray-50 border-b border-gray-200 dark:bg-neutral-900 dark:border-neutral-800 sticky top-0 z-10 text-gray-500 dark:text-neutral-400">
+              {cols.map(h => <th key={h} className="px-4 py-3 font-medium uppercase">{h}</th>)}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100 dark:divide-neutral-800/80">
             {commandes.map((c, i) => {
               const meta = STATUT_META[c.statut] ?? STATUT_META.en_attente;
               const { Icon } = meta;
+              
               const lignesMeds = c.lignes || (c.medicament ? [{ medicament: c.medicament, quantite: c.quantite }] : []);
+              const montantTotalCommande = lignesMeds.reduce((acc, currentLigne) => {
+                const prixUnitaire = currentLigne.medicament?.prix_unitaire ?? 0;
+                return acc + (currentLigne.quantite * prixUnitaire);
+              }, 0);
 
               return (
-                <tr key={c.id_commande} style={{ borderTop: '0.5px solid var(--border)', background: i % 2 !== 0 ? 'var(--bg-hover)' : 'transparent' }}>
+                <tr key={c.id_commande} className={`transition-colors hover:bg-gray-50/50 dark:hover:bg-neutral-800/20 ${i % 2 !== 0 ? 'bg-gray-50/20 dark:bg-neutral-800/10' : 'bg-transparent'}`}>
                   <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1">
-                      {lignesMeds.map((l, idx) => (
-                        <div key={idx} className="flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-[var(--text-muted)]" />
-                          <span className="font-medium text-[var(--text-primary)]">{l.medicament?.nom ?? 'Inconnu'}</span>
-                          <span className="text-[var(--text-muted)] text-xs font-mono">(x{l.quantite})</span>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
+                      CDE #{c.id_commande}
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-neutral-200">
+                      {lignesMeds
+                        .map(l => `${l.medicament?.nom ?? 'Inconnu'} (x${l.quantite})`)
+                        .join(', ')}
+                    </span>
+                    <span className="text-xs text-gray-400 dark:text-neutral-500">
+                      {lignesMeds.length} article{lignesMeds.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </td>
+                  
+                  {showUser && (
+                    <td className="px-4 py-3 text-gray-600 dark:text-neutral-300">
+                      {c.user ? `${c.user.nom} ${c.user.prenom}` : '—'}
+                    </td>
+                  )}
+                  
+                  <td className="px-4 py-3 text-gray-400 dark:text-neutral-500">
+                    {new Date(c.date_commande).toLocaleDateString('fr-FR')}
                   </td>
-                  {showUser && <td className="px-4 py-3 text-[var(--text-secondary)]">{c.user ? `${c.user.nom} ${c.user.prenom}` : '—'}</td>}
-                  <td className="px-4 py-3 text-[var(--text-muted)]">{new Date(c.date_commande).toLocaleDateString('fr-FR')}</td>
+                  
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-dynamic font-medium" style={{ background: meta.bg, color: meta.color }}><Icon size={11} /> {meta.label}</span>
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-dynamic font-medium border ${meta.badge}`}>
+                      <Icon size={11} /> {meta.label}
+                    </span>
                   </td>
+
+                  <td className="px-4 py-3 font-mono font-semibold text-gray-900 dark:text-white">
+                    {montantTotalCommande.toLocaleString('fr-FR')} Ar
+                  </td>
+
                   <td className="px-4 py-3">{renderActions(c)}</td>
                 </tr>
               );
@@ -439,18 +482,24 @@ function CommandeTable({ commandes, loading, error, renderActions, showUser = fa
 
 function Field({ label, error, children }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-dynamic font-medium text-xs uppercase tracking-wide text-[var(--text-muted)]">{label}</label>
+    <div className="flex flex-col gap-1 text-left">
+      <label className="text-dynamic font-medium text-xs uppercase tracking-wide text-gray-400 dark:text-neutral-500">{label}</label>
       {children}
       {error && <span className="text-dynamic text-xs font-medium text-red-500 mt-0.5">{error}</span>}
     </div>
   );
 }
 
-// Bouton des actions du tableau principal
-function ActionBtn({ icon, label, color, onClick, disabled }) {
+function ActionBtn({ type, icon, label, onClick, disabled }) {
+  const isEmerald = type === 'emerald';
   return (
-    <button onClick={onClick} disabled={disabled} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-dynamic font-medium cursor-pointer border-none disabled:opacity-50 transition-all"
-      style={{ background: `${color}15`, color, border: `0.5px solid ${color}40` }}>{icon}{label}</button>
+    <button onClick={onClick} disabled={disabled} 
+      className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-dynamic font-medium cursor-pointer border disabled:opacity-50 transition-all ${
+        isEmerald 
+          ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30 dark:hover:bg-emerald-900/40' 
+          : 'bg-red-50 text-red-600 border-red-200/50 hover:bg-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30 dark:hover:bg-red-900/40'
+      }`}>
+      {icon}{label}
+    </button>
   );
 }

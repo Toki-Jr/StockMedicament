@@ -7,37 +7,49 @@ import {
   ShieldAlert, ClipboardList
 } from 'lucide-react';
 
-/* ─── Palette ─── */
-const C = {
-  green:      '#22c55e',
-  greenDark:  '#16a34a',
-  greenSoft:  'rgba(34,197,94,0.10)',
-  greenBdr:   'rgba(34,197,94,0.25)',
-  orange:     '#f97316',
-  orangeSoft: 'rgba(249,115,22,0.10)',
-  orangeBdr:  'rgba(249,115,22,0.25)',
-  red:        '#ef4444',
-  redSoft:    'rgba(239,68,68,0.10)',
-  redBdr:     'rgba(239,68,68,0.25)',
-  indigo:     '#6366f1',
-  indigoSoft: 'rgba(99,102,241,0.10)',
-  indigoBdr:  'rgba(99,102,241,0.25)',
-};
-
-/* ─── Meta par type d'alerte ─── */
+/* ─── Meta par type d'alerte configuré pour Tailwind ─── */
 const TYPE_META = {
-  peremption:        { label: 'Péremption',        Icon: Calendar,       color: C.red,    bg: C.redSoft,    bdr: C.redBdr,    left: C.red    },
-  EXPIRATION:        { label: 'Expiration',         Icon: Calendar,       color: C.red,    bg: C.redSoft,    bdr: C.redBdr,    left: C.red    },
-  stock_faible:      { label: 'Stock faible',       Icon: AlertTriangle,  color: C.orange, bg: C.orangeSoft, bdr: C.orangeBdr, left: C.orange },
-  RUPTURE_STOCK:     { label: 'Rupture stock',      Icon: Package,        color: C.orange, bg: C.orangeSoft, bdr: C.orangeBdr, left: C.orange },
-  NOUVELLE_COMMANDE: { label: 'Nouvelle commande',  Icon: ClipboardList,  color: C.indigo, bg: C.indigoSoft, bdr: C.indigoBdr, left: C.indigo },
-  COMMANDE_VALIDEE:  { label: 'Commande validée',   Icon: Bell,           color: C.green,  bg: C.greenSoft,  bdr: C.greenBdr,  left: C.green  },
-  COMMANDE_REJETEE:  { label: 'Commande rejetée',   Icon: Bell,           color: C.red,    bg: C.redSoft,    bdr: C.redBdr,    left: C.red    },
+  peremption: { 
+    label: 'Péremption', Icon: Calendar, 
+    badge: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/30', 
+    leftBdr: 'border-l-red-500' 
+  },
+  EXPIRATION: { 
+    label: 'Expiration', Icon: Calendar, 
+    badge: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/30', 
+    leftBdr: 'border-l-red-500' 
+  },
+  stock_faible: { 
+    label: 'Stock faible', Icon: AlertTriangle, 
+    badge: 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/30', 
+    leftBdr: 'border-l-orange-500' 
+  },
+  RUPTURE_STOCK: { 
+    label: 'Rupture stock', Icon: Package, 
+    badge: 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/30', 
+    leftBdr: 'border-l-orange-500' 
+  },
+  NOUVELLE_COMMANDE: { 
+    label: 'Nouvelle commande', Icon: ClipboardList, 
+    badge: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/30', 
+    leftBdr: 'border-l-indigo-500' 
+  },
+  COMMANDE_VALIDEE: { 
+    label: 'Commande validée', Icon: Bell, 
+    badge: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/30', 
+    leftBdr: 'border-l-emerald-600' 
+  },
+  COMMANDE_REJETEE: { 
+    label: 'Commande rejetée', Icon: Bell, 
+    badge: 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/30', 
+    leftBdr: 'border-l-red-500' 
+  },
 };
 
 const getMeta = (type) => TYPE_META[type] ?? {
   label: type, Icon: Bell,
-  color: C.green, bg: C.greenSoft, bdr: C.greenBdr, left: C.green,
+  badge: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/30',
+  leftBdr: 'border-l-emerald-600',
 };
 
 /* ─── Filtres selon rôle ─── */
@@ -65,55 +77,55 @@ const FILTRES_PAR_ROLE = {
 /* ─── Stats selon rôle ─── */
 const getStats = (alertes, nonLues, role) => {
   const base = [
-    { icon: <Bell size={18} color={C.green} />,   iconBg: C.greenSoft, label: 'Total',    value: alertes.length, valueColor: C.green },
-    { icon: <Mail size={18} color={C.red} />,     iconBg: C.redSoft,   label: 'Non lues', value: nonLues,        valueColor: C.red   },
+    { icon: <Bell size={18} />, iconBg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400', label: 'Total', value: alertes.length, valueColor: 'text-emerald-600 dark:text-emerald-400' },
+    { icon: <Mail size={18} />, iconBg: 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400', label: 'Non lues', value: nonLues, valueColor: 'text-red-500 dark:text-red-400' },
   ];
 
   if (role === 'admin') return [
     ...base,
     {
-      icon: <ClipboardList size={18} color={C.indigo} />, iconBg: C.indigoSoft,
+      icon: <ClipboardList size={18} />, iconBg: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 dark:text-indigo-400',
       label: 'Nouvelles cdes',
       value: alertes.filter(a => a.type_alerte === 'NOUVELLE_COMMANDE').length,
-      valueColor: C.indigo,
+      valueColor: 'text-indigo-500 dark:text-indigo-400',
     },
     {
-      icon: <Package size={18} color={C.orange} />, iconBg: C.orangeSoft,
+      icon: <Package size={18} />, iconBg: 'bg-orange-50 dark:bg-orange-950/40 text-orange-500 dark:text-orange-400',
       label: 'Ruptures',
       value: alertes.filter(a => a.type_alerte === 'RUPTURE_STOCK').length,
-      valueColor: C.orange,
+      valueColor: 'text-orange-500 dark:text-orange-400',
     },
   ];
 
   if (role === 'pharmacien') return [
     ...base,
     {
-      icon: <CalendarDays size={18} color={C.red} />, iconBg: C.redSoft,
+      icon: <CalendarDays size={18} />, iconBg: 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400',
       label: 'Péremptions',
       value: alertes.filter(a => ['peremption', 'EXPIRATION'].includes(a.type_alerte)).length,
-      valueColor: C.red,
+      valueColor: 'text-red-500 dark:text-red-400',
     },
     {
-      icon: <AlertTriangle size={18} color={C.orange} />, iconBg: C.orangeSoft,
+      icon: <AlertTriangle size={18} />, iconBg: 'bg-orange-50 dark:bg-orange-950/40 text-orange-500 dark:text-orange-400',
       label: 'Stock faible',
       value: alertes.filter(a => a.type_alerte === 'stock_faible').length,
-      valueColor: C.orange,
+      valueColor: 'text-orange-500 dark:text-orange-400',
     },
   ];
 
   return [
     ...base,
     {
-      icon: <Bell size={18} color={C.green} />, iconBg: C.greenSoft,
+      icon: <Bell size={18} />, iconBg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400',
       label: 'Validées',
       value: alertes.filter(a => a.type_alerte === 'COMMANDE_VALIDEE').length,
-      valueColor: C.green,
+      valueColor: 'text-emerald-600 dark:text-emerald-400',
     },
     {
-      icon: <Bell size={18} color={C.red} />, iconBg: C.redSoft,
+      icon: <Bell size={18} />, iconBg: 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400',
       label: 'Rejetées',
       value: alertes.filter(a => a.type_alerte === 'COMMANDE_REJETEE').length,
-      valueColor: C.red,
+      valueColor: 'text-red-500 dark:text-red-400',
     },
   ];
 };
@@ -128,7 +140,6 @@ export default function AlertesPage() {
 
   const { user } = useAuth();
   const role     = user?.role ?? 'user';
-  const isAdmin  = role === 'admin';
 
   const [saving, setSaving] = useState(false);
   const [toast,  setToast]  = useState(null);
@@ -165,20 +176,19 @@ export default function AlertesPage() {
   ];
 
   const titreRole = {
-    admin:      { icon: <ShieldAlert size={20} color={C.green} />, sub: 'Vue administrateur — commandes & stocks' },
-    pharmacien: { icon: <Bell size={20} color={C.green} />,        sub: 'Vos alertes stock et retours commandes'  },
-    user:       { icon: <Bell size={20} color={C.green} />,        sub: 'Retours sur vos commandes'               },
-  }[role] ?? { icon: <Bell size={20} color={C.green} />, sub: '' };
+    admin:      { icon: <ShieldAlert size={20} />, sub: 'Vue administrateur — commandes & stocks' },
+    pharmacien: { icon: <Bell size={20} />,        sub: 'Vos alertes stock et retours commandes'  },
+    user:       { icon: <Bell size={20} />,        sub: 'Retours sur vos commandes'               },
+  }[role] ?? { icon: <Bell size={20} />, sub: '' };
 
   return (
-    <div className="h-screen flex flex-col gap-5 p-6 overflow-hidden rounded-xl border border-white/[0.05] shadow-2xl">
+    <div className="h-screen flex flex-col gap-5 p-6 overflow-hidden rounded-xl border border-gray-200 dark:border-neutral-800 shadow-2xl bg-white dark:bg-neutral-900">
 
       {/* Toast */}
       {toast && (
-        <div
-          className="fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white text-dynamic font-medium shadow-lg"
-          style={{ background: toast.type === 'error' ? C.red : C.greenDark }}
-        >
+        <div className={`fixed top-5 right-5 z-[2000] px-5 py-3 rounded-xl text-white font-medium shadow-lg text-dynamic transition-all duration-200 ${
+          toast.type === 'error' ? 'bg-red-600' : 'bg-emerald-700'
+        }`}>
           {toast.msg}
         </div>
       )}
@@ -186,25 +196,19 @@ export default function AlertesPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-[10px] flex items-center justify-center shrink-0 relative"
-            style={{ background: C.greenSoft, border: `0.5px solid ${C.greenBdr}` }}
-          >
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 relative bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-400">
             {titreRole.icon}
             {nonLues > 0 && (
-              <span
-                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-medium flex items-center justify-center text-white"
-                style={{ background: C.red }}
-              >
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-medium flex items-center justify-center text-white bg-red-500">
                 {nonLues > 9 ? '9+' : nonLues}
               </span>
             )}
           </div>
           <div>
-            <h1 className="text-[22px] font-medium tracking-tight leading-tight text-[var(--text-primary)]">
-              Mes <span style={{ color: C.green }}>alertes</span>
+            <h1 className="text-dynamic font-medium tracking-tight leading-tight text-gray-900 dark:text-white">
+              Mes <span className="text-emerald-700 dark:text-emerald-400 font-bold">alertes</span>
             </h1>
-            <p className="text-dynamic text-[var(--text-muted)] mt-0.5">{titreRole.sub}</p>
+            <p className="text-dynamic text-gray-500 dark:text-neutral-400 mt-0.5">{titreRole.sub}</p>
           </div>
         </div>
 
@@ -212,8 +216,7 @@ export default function AlertesPage() {
           <button
             onClick={handleToutesLues}
             disabled={saving}
-            className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg text-dynamic font-medium text-white border-none cursor-pointer disabled:opacity-60"
-            style={{ background: C.greenDark }}
+            className="flex items-center gap-1.5 px-[18px] py-[9px] rounded-lg font-medium text-white border-none cursor-pointer bg-emerald-700 hover:bg-emerald-800 disabled:opacity-60 transition-colors text-dynamic"
           >
             {saving
               ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -229,24 +232,20 @@ export default function AlertesPage() {
       </div>
 
       {/* ── Filtres ── */}
-      <div
-        className="flex gap-2 flex-wrap items-center px-4 py-3 rounded-xl"
-        style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}
-      >
+      <div className="flex gap-2 flex-wrap items-center px-4 py-3 rounded-xl bg-gray-50 dark:bg-neutral-800/50 border border-gray-200 dark:border-neutral-800">
         {/* Filtre par type */}
-        <div className="flex gap-1.5 flex-wrap flex-1">
+        <div className="flex gap-1.5 flex-wrap flex-1 text-dynamic">
           {filtres.map(f => {
             const active = filtre.type_alerte === f.val;
             return (
               <button
                 key={f.val}
                 onClick={() => setFiltre(p => ({ ...p, type_alerte: f.val }))}
-                className="px-3.5 py-1.5 rounded-full text-dynamic font-medium cursor-pointer border-none transition-all duration-150"
-                style={{
-                  background: active ? C.greenDark : 'transparent',
-                  color:      active ? '#fff' : 'var(--text-muted)',
-                  border:     active ? 'none' : '0.5px solid var(--border)',
-                }}
+                className={`px-3.5 py-1.5 rounded-full font-medium cursor-pointer border transition-all duration-150 text-dynamic ${
+                  active 
+                    ? 'bg-emerald-700 text-white border-transparent' 
+                    : 'bg-transparent text-gray-600 dark:text-neutral-300 border-gray-300 dark:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                }`}
               >
                 {f.label}
               </button>
@@ -255,22 +254,21 @@ export default function AlertesPage() {
         </div>
 
         {/* Séparateur */}
-        <div className="w-px h-5 shrink-0" style={{ background: 'var(--border)' }} />
+        <div className="w-px h-5 shrink-0 bg-gray-200 dark:bg-neutral-800" />
 
         {/* Filtre lu/non lu */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 text-dynamic">
           {FILTRES_LU.map(f => {
             const active = filtre.lu === f.val;
             return (
               <button
                 key={f.val}
                 onClick={() => setFiltre(p => ({ ...p, lu: f.val }))}
-                className="px-3.5 py-1.5 rounded-full text-dynamic font-medium cursor-pointer border-none transition-all duration-150"
-                style={{
-                  background: active ? C.greenDark : 'transparent',
-                  color:      active ? '#fff' : 'var(--text-muted)',
-                  border:     active ? 'none' : '0.5px solid var(--border)',
-                }}
+                className={`px-3.5 py-1.5 rounded-full font-medium cursor-pointer border transition-all duration-150 text-dynamic ${
+                  active 
+                    ? 'bg-emerald-700 text-white border-transparent' 
+                    : 'bg-transparent text-gray-600 dark:text-neutral-300 border-gray-300 dark:border-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                }`}
               >
                 {f.label}
               </button>
@@ -281,83 +279,60 @@ export default function AlertesPage() {
 
       {/* ── Error ── */}
       {error && (
-        <div
-          className="px-4 py-3 rounded-lg text-dynamic"
-          style={{ background: C.redSoft, color: C.red, border: `0.5px solid ${C.redBdr}` }}
-        >
+        <div className="px-4 py-3 rounded-lg text-dynamic bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/30">
           {error}
         </div>
       )}
 
-      {/* ── Liste ── */}
-      {loading ? (
-        <div className="text-center py-20 text-dynamic italic text-[var(--text-muted)]">
-          Chargement des alertes…
-        </div>
-      ) : alertes.length === 0 ? (
-        <div
-          className="text-center py-20 rounded-xl"
-          style={{ border: '0.5px solid var(--border)' }}
-        >
-          <div className="text-[40px] mb-3 opacity-20">🔕</div>
-          <p className="font-medium text-dynamic text-[var(--text-primary)]">Aucune alerte</p>
-          <p className="text-dynamic mt-1 text-[var(--text-muted)]">Tout est sous contrôle !</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {alertes.map(alerte => {
+      {/* ── Liste (Avec Scroll) ── */}
+      <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-2">
+        {loading ? (
+          <div className="text-center py-20 text-gray-400 dark:text-neutral-500 italic text-dynamic">
+            Chargement des alertes…
+          </div>
+        ) : alertes.length === 0 ? (
+          <div className="text-center py-20 rounded-xl border border-gray-200 dark:border-neutral-800 bg-gray-50/30 dark:bg-transparent">
+            <div className="text-4xl mb-3 opacity-20">🔕</div>
+            <p className="font-medium text-gray-900 dark:text-white text-dynamic">Aucune alerte</p>
+            <p className="text-gray-400 mt-1 text-dynamic">Tout est sous contrôle !</p>
+          </div>
+        ) : (
+          alertes.map(alerte => {
             const meta      = getMeta(alerte.type_alerte);
             const { Icon }  = meta;
             return (
               <div
                 key={alerte.id_alerte}
-                className="flex items-start justify-between gap-4 px-5 py-4 transition-opacity duration-200"
-                style={{
-                  background:   'var(--bg-content)',
-                  border:       '0.5px solid var(--border)',
-                  borderLeft:   `3px solid ${meta.left}`,
-                  borderRadius: '0 12px 12px 0',
-                  opacity:      alerte.lu ? 0.45 : 1,
-                }}
+                className={`flex items-start justify-between gap-4 px-5 py-4 border border-l-[3px] border-gray-200 dark:border-neutral-800 ${meta.leftBdr} rounded-r-xl bg-white dark:bg-neutral-900/40 transition-opacity duration-200 ${
+                  alerte.lu ? 'opacity-40' : 'opacity-100'
+                }`}
               >
                 {/* Icône */}
-                <div
-                  className="w-9 h-9 rounded-[8px] flex items-center justify-center shrink-0 mt-0.5"
-                  style={{ background: meta.bg, border: `0.5px solid ${meta.bdr}` }}
-                >
-                  <Icon size={17} color={meta.color} />
+                <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 mt-0.5 border ${meta.badge}`}>
+                  <Icon size={16} />
                 </div>
 
                 {/* Corps */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
-                    <span
-                      className="text-dynamic font-medium px-2 py-0.5 rounded-full"
-                      style={{ background: meta.bg, color: meta.color, border: `0.5px solid ${meta.bdr}` }}
-                    >
+                <div className="flex-1 min-w-0 text-dynamic">
+                  <div className="flex items-center gap-1.5 flex-wrap mb-1.5 text-dynamic">
+                    <span className={`font-medium px-2 py-0.5 rounded-full border text-dynamic ${meta.badge}`}>
                       {meta.label}
                     </span>
                     {!alerte.lu && (
-                      <span
-                        className="text-dynamic font-medium px-2 py-0.5 rounded-full"
-                        style={{ background: C.redSoft, color: C.red, border: `0.5px solid ${C.redBdr}` }}
-                      >
+                      <span className="font-medium px-2 py-0.5 rounded-full border bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 border-red-200 dark:border-red-900/20 text-dynamic">
                         Nouveau
                       </span>
                     )}
                     {alerte.medicament?.nom && (
-                      <span
-                        className="text-dynamic font-mono font-medium px-2 py-0.5 rounded-[5px]"
-                        style={{ background: C.greenSoft, color: C.greenDark, border: `0.5px solid ${C.greenBdr}` }}
-                      >
+                      <span className="font-mono font-medium px-2 py-0.5 rounded border bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/20 text-dynamic">
                         {alerte.medicament.nom}
                       </span>
                     )}
                   </div>
-                  <p className="text-dynamic leading-relaxed mb-1 text-[var(--text-primary)]">
+                  <p className="leading-relaxed mb-1 text-gray-900 dark:text-white font-medium text-dynamic">
                     {alerte.message}
                   </p>
-                  <p className="text-dynamic text-[var(--text-muted)]">
+                  <p className="text-gray-400 dark:text-neutral-500 text-dynamic">
                     {new Date(alerte.createdAt).toLocaleDateString('fr-FR', {
                       day: '2-digit', month: 'long', year: 'numeric',
                       hour: '2-digit', minute: '2-digit',
@@ -366,12 +341,11 @@ export default function AlertesPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                <div className="flex items-center gap-2 shrink-0 mt-0.5 text-dynamic">
                   {!alerte.lu && (
                     <button
                       onClick={() => handleMarquerLu(alerte.id_alerte)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] text-dynamic font-medium cursor-pointer border-none"
-                      style={{ background: C.greenSoft, color: C.greenDark, border: `0.5px solid ${C.greenBdr}` }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded border font-medium cursor-pointer bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors text-dynamic"
                     >
                       <Check size={12} /> Lu
                     </button>
@@ -379,19 +353,17 @@ export default function AlertesPage() {
                   
                   <button
                     onClick={() => handleDelete(alerte.id_alerte)}
-                    className="w-[30px] h-[30px] flex items-center justify-center rounded-[7px] cursor-pointer border-none"
-                    style={{ background: C.redSoft, border: `0.5px solid ${C.redBdr}` }}
+                    className="w-[30px] h-[30px] flex items-center justify-center rounded border cursor-pointer bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-dynamic"
                     title="Supprimer"
                   >
-                    <Trash2 size={13} color={C.red} />
+                    <Trash2 size={13} />
                   </button>
-                  
                 </div>
               </div>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   );
 }
@@ -399,21 +371,15 @@ export default function AlertesPage() {
 /* ── Stat card ── */
 function StatCard({ icon, iconBg, label, value, valueColor }) {
   return (
-    <div
-      className="flex items-center gap-3 px-4 py-3.5 rounded-xl"
-      style={{ background: 'var(--bg-sidebar)', border: '0.5px solid var(--border)' }}
-    >
-      <div
-        className="w-9 h-9 rounded-[8px] flex items-center justify-center shrink-0"
-        style={{ background: iconBg }}
-      >
+    <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-neutral-800/40 border border-gray-200 dark:border-neutral-800">
+      <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 ${iconBg}`}>
         {icon}
       </div>
       <div>
-        <div className="text-[21px] font-medium leading-none" style={{ color: valueColor }}>
+        <div className={`font-bold leading-none text-dynamic ${valueColor}`}>
           {value}
         </div>
-        <div className="text-dynamic uppercase tracking-wide mt-1 text-[var(--text-muted)]">
+        <div className="text-gray-400 dark:text-neutral-500 uppercase font-semibold tracking-wider mt-1 text-dynamic">
           {label}
         </div>
       </div>

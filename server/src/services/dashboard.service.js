@@ -1,6 +1,11 @@
 const prisma = require('../config/prisma');
 
 const getStats = async () => {
+  const today = {
+    gte: new Date(new Date().setHours(0, 0, 0, 0)),
+    lte: new Date(new Date().setHours(23, 59, 59, 999)),
+  };
+
   const [
     totalMedicaments,
     totalLots,
@@ -22,22 +27,22 @@ const getStats = async () => {
     prisma.commande.count({ where: { statut: 'validee' } }),
     prisma.commande.count({ where: { statut: 'en_attente' } }),
     prisma.lot.aggregate({ _sum: { quantite_entre: true, quantite_sortie: true } }),
-    prisma.mouvementstock.count({
-      where: {
-        date_mvt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          lte: new Date(new Date().setHours(23, 59, 59, 999)),
-        },
-      },
-    }),
+    prisma.mouvementstock.count({ where: { date_mvt: today } }),
+
+    // ✅ plus de include medicament direct — on passe par lignes
     prisma.commande.findMany({
       take: 5,
       orderBy: { date_commande: 'desc' },
       include: {
-        medicament: { select: { nom: true } },
-        user:       { select: { nom: true, prenom: true } },
+        lignes: {
+          include: {
+            medicament: { select: { nom: true } },
+          },
+        },
+        user: { select: { nom: true, prenom: true } },
       },
     }),
+
     prisma.mouvementstock.findMany({
       take: 5,
       orderBy: { date_mvt: 'desc' },
@@ -47,23 +52,11 @@ const getStats = async () => {
     }),
     prisma.mouvementstock.aggregate({
       _sum: { quantite_mvt: true },
-      where: {
-        type_mvt: 'entree',
-        date_mvt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          lte: new Date(new Date().setHours(23, 59, 59, 999)),
-        },
-      },
+      where: { type_mvt: 'entree', date_mvt: today },
     }),
     prisma.mouvementstock.aggregate({
       _sum: { quantite_mvt: true },
-      where: {
-        type_mvt: 'sortie',
-        date_mvt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          lte: new Date(new Date().setHours(23, 59, 59, 999)),
-        },
-      },
+      where: { type_mvt: 'sortie', date_mvt: today },
     }),
   ]);
 
@@ -87,6 +80,45 @@ const getStats = async () => {
   };
 };
 
+const getStatsUser = async (userId) => {
+  const [
+    commandesEnAttente,
+    commandesValidees,
+    commandesRejetees,
+    totalCommandes,
+    dernieresCommandes,
+  ] = await Promise.all([
+    prisma.commande.count({ where: { id_user: userId, statut: 'en_attente' } }),
+    prisma.commande.count({ where: { id_user: userId, statut: 'validee' } }),
+    prisma.commande.count({ where: { id_user: userId, statut: 'rejetee' } }),
+    prisma.commande.count({ where: { id_user: userId } }),
+
+    // ✅ même correction ici
+    prisma.commande.findMany({
+      where:   { id_user: userId },
+      take:    5,
+      orderBy: { date_commande: 'desc' },
+      include: {
+        lignes: {
+          include: {
+            medicament: { select: { nom: true } },
+          },
+        },
+        user: { select: { nom: true, prenom: true } },
+      },
+    }),
+  ]);
+
+  return {
+    commandesEnAttente,
+    commandesValidees,
+    commandesRejetees,
+    totalCommandes,
+    dernieresCommandes,
+    derniersMovements: [],
+  };
+};
+
 const getCommandesParJour = async () => {
   const days = 7;
   const result = [];
@@ -97,36 +129,41 @@ const getCommandesParJour = async () => {
     const gte = new Date(date.setHours(0, 0, 0, 0));
     const lte = new Date(date.setHours(23, 59, 59, 999));
 
-    const commandes = await prisma.commande.groupBy({
-      by: ['id_medoc'],
-      _sum: { quantite: true },
-      where: {
-        date_commande: { gte, lte },
-        statut: { not: 'brouillon' },
+    // ✅ quantite est dans lignecommande, pas commande — on agrège via lignes
+    const lignes = await prisma.lignecommande.groupBy({
+      by:      ['id_medoc'],
+      _sum:    { quantite: true },
+      where:   {
+        commande: {
+          date_commande: { gte, lte },
+          statut: { not: 'brouillon' },
+        },
       },
       orderBy: { _sum: { quantite: 'desc' } },
-      take: 1,
+      take:    1,
     });
 
     let topMedicament = null;
-    if (commandes.length > 0) {
+    if (lignes.length > 0) {
       const med = await prisma.medicament.findUnique({
-        where: { id_medoc: commandes[0].id_medoc },
+        where:  { id_medoc: lignes[0].id_medoc },
         select: { nom: true },
       });
       topMedicament = {
         nom:      med?.nom ?? '—',
-        quantite: commandes[0]._sum.quantite ?? 0,
+        quantite: lignes[0]._sum.quantite ?? 0,
       };
     }
 
     result.push({
-      date:  new Date(gte).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' }),
-      top:   topMedicament,
+      date: new Date(gte).toLocaleDateString('fr-FR', {
+        weekday: 'short', day: '2-digit', month: 'short',
+      }),
+      top: topMedicament,
     });
   }
 
   return result;
 };
 
-module.exports = { getStats, getCommandesParJour };
+module.exports = { getStats, getStatsUser, getCommandesParJour };

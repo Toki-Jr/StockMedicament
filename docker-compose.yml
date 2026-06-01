@@ -28,13 +28,13 @@ services:
       JWT_SECRET: stock_medoc_super_secret_key_2024
       JWT_EXPIRES_IN: 24h
       NODE_ENV: development
+    env_file:
+      - .env
     command: >
       sh -c "sleep 5 &&
              npx prisma generate &&
              npx prisma migrate deploy &&
              npm run dev"
-    env_file:
-      - .env
 
   client:
     build: ./client 
