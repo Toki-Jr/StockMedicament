@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express      = require('express');
 const cors         = require('cors');
 const morgan       = require('morgan');
@@ -13,6 +15,9 @@ const commandeRoutes   = require('./routes/commande.routes');
 const alerteRoutes     = require('./routes/alerte.routes');
 const historiqueRoute  = require('./routes/historique.routes');
 const dashboardRoute   = require('./routes/dashboard.routes');
+
+const factureRoutes    = require('./routes/facture.routes');
+
 
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
 
@@ -46,6 +51,7 @@ app.use('/api/commandes',   commandeRoutes);
 app.use('/api/alertes',     alerteRoutes);
 app.use('/api/historiques', historiqueRoute);
 app.use('/api/dashboard',   dashboardRoute);
+app.use('/api/factures',     factureRoutes);
 
 // ⚠️ Gestionnaires d'erreurs (TOUJOURS en dernier après toutes les routes)
 app.use(notFoundHandler);

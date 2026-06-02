@@ -9,23 +9,50 @@ async function register(userData) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new Error('Email déjà utilisé');
 
+  const adminCount = await prisma.user.count({
+    where: { 
+      role: {
+        in: ['admin', 'ADMIN']
+      }
+    }
+  });
+
+  const isFirstAdmin = adminCount === 0;
+
+  // 3. Déterminer le rôle et le statut d'approbation (En minuscules pour matcher la Sidebar React)
+  const finalRole = isFirstAdmin ? 'admin' : (role?.toLowerCase() || 'user');
+  const isApprouved = isFirstAdmin ? true : false;
+
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  // 4. Création de l'utilisateur
   const user = await prisma.user.create({
-    data: { nom, prenom, email, password: hashedPassword, role: role || 'user', approuve: false }
+    data: { 
+      nom, 
+      prenom, 
+      email, 
+      password: hashedPassword, 
+      role: finalRole, 
+      approuve: isApprouved 
+    }
   });
 
-  await log('INSCRIPTION', `Nouvel utilisateur inscrit : ${user.nom} ${user.prenom} (${user.role}) — en attente d'approbation`, user.id);
+  // 5. Gestion des logs et des alertes selon le cas
+  if (isFirstAdmin) {
+    await log('INSCRIPTION', `Premier administrateur créé automatiquement : ${user.nom} ${user.prenom}`, user.id);
+  } else {
+    await log('INSCRIPTION', `Nouvel utilisateur inscrit : ${user.nom} ${user.prenom} (${user.role}) — en attente d'approbation`, user.id);
 
-  // Notif admin
-  await prisma.alerte.create({
-    data: {
-      type_alerte: 'NOUVELLE_INSCRIPTION',
-      message:     `${user.nom} ${user.prenom} (${user.role}) s'est inscrit et attend votre approbation.`,
-      role_cible:  'ADMIN',
-      id_medoc:    1, // mettre un id_medoc par défaut ou rendre nullable
-    },
-  });
+    // Notif aux admins existants (Le rôle cible ici doit aussi correspondre à votre gestion d'alertes)
+    await prisma.alerte.create({
+      data: {
+        type_alerte: 'NOUVELLE_INSCRIPTION',
+        message:     `${user.nom} ${user.prenom} (${user.role}) s'est inscrit et attend votre approbation.`,
+        role_cible:  'admin', // En minuscules également
+        id_medoc:    null,
+      },
+    });
+  }
 
   const { password: _, ...userWithoutPassword } = user;
   return userWithoutPassword;
@@ -81,7 +108,7 @@ async function deleteUser(id, adminId) {
   const userId = parseInt(id);
 
   const existing = await prisma.user.findUnique({ where: { id: userId } });
-  if (!existing) return; // ← ne pas throw, juste ignorer si déjà supprimé
+  if (!existing) return;
 
   const isSelf = userId === parseInt(adminId);
   if (!isSelf) {

@@ -1,11 +1,25 @@
 const prisma = require('../config/prisma');
+const { log } = require('./historique.service');
 
 const getAll = async (search) => {
   return prisma.medicament.findMany({
     where: search
-      ? { OR: [{ nom: { contains: search, mode: 'insensitive' } }, { code_cip: { contains: search } }] }
+      ? { 
+          OR: [
+            { nom: { contains: search, mode: 'insensitive' } }, 
+            { code_cip: { contains: search } }
+          ] 
+        }
       : undefined,
-    include: { lots: true, _count: { select: { alertes: true, commandes: true } } },
+    include: { 
+      lots: true, 
+      _count: { 
+        select: { 
+          alertes: true, 
+          lignes: true
+        } 
+      } 
+    },
     orderBy: { createdAt: 'desc' },
   });
 };
@@ -20,16 +34,32 @@ const getById = async (id) => {
   return { ...med, stock_actuel: stockActuel };
 };
 
-const create = async (data) => {
-  return prisma.medicament.create({ data });
+const create = async (data, userId) => {
+  const medicament = await prisma.medicament.create({ data });
+  const user       = await prisma.user.findUnique({ where: {id: parseInt(userId)} }); // Recuperer
+  await log(
+    "Nouvel Médicament",
+    `${user.nom} ${user.prenom} a ajouté un nouveau médicament (${medicament.nom})`,
+    userId
+  );
+
+  return medicament;
 };
 
-const update = async (id, data) => {
+const update = async (id, data, userId) => {
   const { code_cip, nom, forme, dosage, prix_unitaire, seuil_alerte_qte, seuil_alerte_peremption } = data;
-  return prisma.medicament.update({
+  const medicament = await prisma.medicament.update({
     where: { id_medoc: parseInt(id) },
     data:  { code_cip, nom, forme, dosage, prix_unitaire, seuil_alerte_qte, seuil_alerte_peremption },
   });
+
+  const user       = await prisma.user.findUnique({ where: {id: parseInt(userId)} }); // Recuperer
+  await log(
+    "Modification de Médicament",
+    `${user.nom} ${user.prenom} a modifié un médicament (${medicament.nom})`,
+    userId
+  );
+  return medicament;
 };
 
 const remove = async (id) => {
@@ -43,31 +73,73 @@ const verifierAlertes = async (id_medoc) => {
   });
   if (!med) return;
 
-  const alertes = [];
   const maintenant = new Date();
-  const stockTotal = med.lots.reduce((acc, lot) => acc + (lot.quantite_entre - lot.quantite_sortie), 0);
+  const stockTotal = med.lots.reduce(
+    (acc, lot) => acc + (lot.quantite_entre - lot.quantite_sortie), 0
+  );
 
+  // 1. Stock faible (Global au médicament)
   if (stockTotal <= med.seuil_alerte_qte) {
-    alertes.push({
-      type_alerte: 'stock_faible',
-      message: `Stock de "${med.nom}" (${stockTotal} unités) en dessous du seuil (${med.seuil_alerte_qte})`,
-      id_medoc: med.id_medoc,
+    const existante = await prisma.alerte.findFirst({
+      where: { id_medoc: med.id_medoc, type_alerte: 'stock_faible', lu: false },
     });
-  }
-
-  for (const lot of med.lots) {
-    const joursRestants = Math.ceil((new Date(lot.date_expiration) - maintenant) / (1000 * 60 * 60 * 24));
-    if (joursRestants <= med.seuil_alerte_peremption && joursRestants > 0) {
-      alertes.push({
-        type_alerte: 'peremption',
-        message: `Lot ${lot.numero_lot} de "${med.nom}" expire dans ${joursRestants} jour(s)`,
-        id_medoc: med.id_medoc,
+    if (!existante) {
+      await prisma.alerte.create({
+        data: {
+          type_alerte: 'stock_faible',
+          message:     `Stock faible pour "${med.nom}" : ${stockTotal} quantités restantes (Seuil critique : ${med.seuil_alerte_qte})`,
+          id_medoc: med.id_medoc,
+          role_cible: 'admin',
+        },
       });
     }
   }
 
-  if (alertes.length > 0) await prisma.alerte.createMany({ data: alertes });
-  return alertes;
+  // 2. Péremption (Spécifique au lot)
+  for (const lot of med.lots) {
+    const joursRestants = Math.ceil(
+      (new Date(lot.date_expiration) - maintenant) / (1000 * 60 * 60 * 24)
+    );
+    
+    // On définit un identifiant unique pour le lot dans le message ou via un champ optionnel
+    // Ici, on utilise une vérification incluant le numéro du lot
+    const messageExpire = `Lot ${lot.numero_lot} de "${med.nom}" est expiré depuis le ${new Date(lot.date_expiration).toLocaleDateString('fr-FR')}`;
+    const messageBientot = `Lot ${lot.numero_lot} de "${med.nom}" expire dans ${joursRestants} jour(s)`;
+
+    // Vérifier si une alerte pour CE lot précis existe déjà
+    const existante = await prisma.alerte.findFirst({
+      where: { 
+        id_medoc: med.id_medoc, 
+        OR: [{ message: messageExpire }, { message: messageBientot }],
+        lu: false 
+      },
+    });
+
+    if (!existante && (joursRestants <= 0 || joursRestants <= med.seuil_alerte_peremption)) {
+      await prisma.alerte.create({
+        data: {
+          type_alerte: joursRestants <= 0 ? 'expire' : 'peremption',
+          message: joursRestants <= 0 ? messageExpire : messageBientot,
+          id_medoc: med.id_medoc,
+          role_cible: 'admin',
+        },
+      });
+    }
+  }
 };
 
-module.exports = { getAll, getById, create, update, remove, verifierAlertes };
+const verifierToutesLesAlertes = async () => {
+  // On récupère tous les médicaments
+  const medicaments = await prisma.medicament.findMany({
+    select: { id_medoc: true }
+  });
+
+  // On lance la vérification pour chacun
+  const resultats = await Promise.all(
+    medicaments.map(m => verifierAlertes(m.id_medoc))
+  );
+  
+  return { message: "Vérification globale terminée", total: medicaments.length };
+};
+
+module.exports = { getAll, getById, create, update, remove, verifierAlertes, verifierToutesLesAlertes };
