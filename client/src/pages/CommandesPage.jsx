@@ -435,9 +435,6 @@ function CommandeTable({ commandes, loading, error, renderActions, showUser = fa
                 <tr key={c.id_commande} className={`transition-colors hover:bg-gray-50/50 dark:hover:bg-neutral-800/20 ${i % 2 !== 0 ? 'bg-gray-50/20 dark:bg-neutral-800/10' : 'bg-transparent'}`}>
                   <td className="px-4 py-3">
                   <div className="flex flex-col gap-0.5">
-                    <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
-                      CDE #{c.id_commande}
-                    </span>
                     <span className="font-medium text-gray-900 dark:text-neutral-200">
                       {lignesMeds
                         .map(l => `${l.medicament?.nom ?? 'Inconnu'} (x${l.quantite})`)
