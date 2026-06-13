@@ -63,7 +63,7 @@ router.put('/users/:id',    authenticate, authorize('admin'), ctrl.updateUser);
 router.delete('/me',        authenticate,                     ctrl.deleteMe);
 router.delete('/users/:id', authenticate, authorize('admin'), ctrl.deleteUser);
 router.patch('/users/:id/approuver',    authenticate, authorize('admin'), ctrl.approuverUser);
-router.patch('/change-password/:id',    authenticate, changePassword.changePasswordController);
+router.put('/change-password/:id',    authenticate, changePassword.changePasswordController);
 router.patch('/preferences',            authenticate, updatePreferences.updatePreferencesController);
 
 module.exports = router;

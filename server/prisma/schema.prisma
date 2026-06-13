@@ -22,6 +22,7 @@ model user {
   commandes commande[]
   alertes   alerte[]
   historiques historique[]
+  mouvements mouvementstock[]
 }
 
 model medicament {
@@ -59,7 +60,9 @@ model mouvementstock {
   date_mvt     DateTime @default(now())
   motif        String
   id_lot       Int
+  id_user      Int?                                           
   lot          lot      @relation(fields: [id_lot], references: [id_lot])
+  user         user?    @relation(fields: [id_user], references: [id]) 
 }
 
 model commande {

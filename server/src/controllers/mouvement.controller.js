@@ -4,7 +4,7 @@ const { estFacturable, _execFacturer } = require('./facture.controller');
 
 const getAll = async (req, res, next) => {
   try {
-    const data = await svc.getAll(req.query);
+    const data = await svc.getAll(req.query, req.user);
     return success(res, data, `${data.length} mouvement(s)`);
   } catch (err) { next(err); }
 };
@@ -51,7 +51,7 @@ const create = async (req, res, next) => {
     }
 
     // ── 1. Créer le mouvement (service existant inchangé) ───────────────
-    const mouvement = await svc.create(req.body);
+    const mouvement = await svc.create({ ...req.body, id_user: req.user.id });
 
     // ── 2. Si SORTIE → générer facture + envoyer email auto ─────────────
     let factureInfo = null;

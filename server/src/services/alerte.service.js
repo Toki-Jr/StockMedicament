@@ -1,4 +1,5 @@
 const prisma = require('../config/prisma');
+const NotificationService = require('./notification.service');
 
 const normalizeRole = (role) => role?.toLowerCase();
 
@@ -121,6 +122,15 @@ const verifierStockEtCreerAlertes = async () => {
             role_cible:  'admin',
           },
         });
+        NotificationService.toRole(
+          'admin',
+          'stock-faible',
+          `Stock faible: ${nomMed}`,
+          {
+            medicament: nomMed,
+            restant
+          }
+        )
       }
     }
 
@@ -140,6 +150,12 @@ const verifierStockEtCreerAlertes = async () => {
             role_cible:  'admin',
           },
         });
+
+        NotificationService.toRole(
+          'admin',
+          'expire',
+          `Lot expiré : ${nomMed}`
+        );
       }
     }
 

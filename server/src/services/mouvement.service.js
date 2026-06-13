@@ -2,16 +2,18 @@ const prisma = require('../config/prisma');
 
 const { verifierAlertes } = require('./medicament.service');
 
-const getAll = async ({ type_mvt, id_lot } = {}) => {
+const getAll = async ({ type_mvt, id_lot } = {}, user = {}) => {
   return prisma.mouvementstock.findMany({
     where: {
       ...(type_mvt && { type_mvt }),
-      ...(id_lot && { id_lot: parseInt(id_lot) }),
+      ...(id_lot   && { id_lot: parseInt(id_lot) }),
+      ...(user.role && user.role !== 'admin' && { id_user: parseInt(user.id) }),
     },
     include: {
       lot: {
         include: { medicament: { select: { nom: true, code_cip: true, prix_unitaire: true } } },
       },
+      user: true
     },
     orderBy: { date_mvt: 'desc' },
   });
@@ -26,14 +28,13 @@ const getById = async (id) => {
   return mvt;
 };
 
-const create = async ({ type_mvt, quantite_mvt, motif, id_lot, date_mvt }) => {
-  // Vérifier le lot existe
-  const lot = await prisma.lot.findUnique({ where: { id_lot: parseInt(id_lot) } });
-  if (!lot) throw { statusCode: 404, message: 'Lot introuvable' };
-
+// Logique pure — accepte tx ou prisma
+const createMouvementWithClient = async ({ type_mvt, quantite_mvt, motif, id_lot, date_mvt, id_user }, client = prisma) => {
   const qte = parseInt(quantite_mvt);
 
-  // Pour une sortie : vérifier stock suffisant
+  const lot = await client.lot.findUnique({ where: { id_lot: parseInt(id_lot) } });
+  if (!lot) throw { statusCode: 404, message: 'Lot introuvable' };
+
   if (type_mvt === 'sortie') {
     const stockRestant = lot.quantite_entre - lot.quantite_sortie;
     if (qte > stockRestant) {
@@ -41,28 +42,38 @@ const create = async ({ type_mvt, quantite_mvt, motif, id_lot, date_mvt }) => {
     }
   }
 
-  // Transaction : créer mouvement + mettre à jour lot
-  const [mouvement] = await prisma.$transaction([
-    prisma.mouvementstock.create({
-      data: {
-        type_mvt,
-        quantite_mvt: qte,
-        motif,
-        id_lot: parseInt(id_lot),
-        date_mvt: date_mvt ? new Date(date_mvt) : new Date(),
-      },
-    }),
-    prisma.lot.update({
-      where: { id_lot: parseInt(id_lot) },
-      data:
-        type_mvt === 'entree'
-          ? { quantite_entre: { increment: qte } }
-          : { quantite_sortie: { increment: qte } },
-    }),
-  ]);
+  const mouvement = await client.mouvementstock.create({
+    data: {
+      type_mvt,
+      quantite_mvt: qte,
+      motif,
+      id_lot:   parseInt(id_lot),
+      date_mvt: date_mvt ? new Date(date_mvt) : new Date(),
+      ...(id_user && { id_user: parseInt(id_user) }),  // ← ajout
+    },
+  });
 
-  // Vérifier les alertes après chaque mouvement
-  await verifierAlertes(lot.id_medoc);
+  await client.lot.update({
+    where: { id_lot: parseInt(id_lot) },
+    data:
+      type_mvt === 'entree'
+        ? { quantite_entre: { increment: qte } }
+        : { quantite_sortie: { increment: qte } },
+  });
+
+  return mouvement;
+};
+
+// Appel standalone (routes normales) — gère sa propre transaction + alertes
+const create = async (data) => {
+  const mouvement = await prisma.$transaction(async (tx) => {
+    return await createMouvementWithClient(data, tx);
+  });
+
+  // Alertes EN DEHORS de la transaction (pas bloquant)
+  const lot = await prisma.lot.findUnique({ where: { id_lot: parseInt(data.id_lot) } });
+  if (lot) await verifierAlertes(lot.id_medoc);
+
   return mouvement;
 };
 
@@ -90,4 +101,4 @@ const getStats = async () => {
   };
 };
 
-module.exports = { getAll, getById, create, getStats };
+module.exports = { getAll, getById, create, getStats, createMouvementWithClient };

@@ -1,6 +1,8 @@
 const prisma = require('../config/prisma.js');
 const { log } = require('./historique.service.js');
-const { create: createMouvement } = require('./mouvement.service');
+const { createMouvementWithClient } = require('./mouvement.service');
+const NotificationService = require('./notification.service.js');
+const { getIo } = require('../config/socket.js');
 
 // ── Include réutilisable ──────────────────────────────────────────────────────
 const COMMANDE_INCLUDE = {
@@ -12,7 +14,7 @@ const COMMANDE_INCLUDE = {
     },
   },
   user: {
-    select: { nom: true, prenom: true, role: true },
+    select: { nom: true, prenom: true, role: true, email: true },
   },
 };
 
@@ -57,7 +59,7 @@ const create = async (userId, payload) => {
 
   await log(
     'COMMANDE_CREEE',
-    `Commande #${commande.id_commande} créée (${commande.lignes.length} ligne(s))`,
+    `Commande créée (${commande.lignes.length} ligne(s))`,
     userId,
   );
 
@@ -85,7 +87,7 @@ const envoyer = async (id, userId, userRole) => {
   const alerte = await prisma.alerte.create({
     data: {
       type_alerte: 'NOUVELLE_COMMANDE',
-      message: `Nouvelle commande #${id} de ${commande.user.nom} ${commande.user.prenom}`,
+      message: `Nouvelle commande de ${commande.user.nom} ${commande.user.prenom} a été enoyée`,
       role_cible: 'admin',
     }
   });
@@ -95,6 +97,12 @@ const envoyer = async (id, userId, userRole) => {
     `Commande #${id} envoyée à l'admin`,
     userId,
   );
+  NotificationService.toRole(
+    'admin',
+    'COMMANDE_ENVOYEE',
+    `Nouvelle commande de ${commande.user.nom} ${commande.user.prenom} a été enoyée`
+  )
+  getIo().to('role:admin').emit('nouvelle_commande', updated);
 
   return updated;
 };
@@ -108,45 +116,56 @@ const valider = async (id, motif, adminId) => {
     throw new Error('Seule une commande en attente peut être validée.');
   }
 
-  const updated = await prisma.commande.update({
-    where:   { id_commande: parseInt(id) },
-    data:    { statut: 'validee', motif_rejet: motif || null },
-    include: COMMANDE_INCLUDE,
-  });
+  const result = await prisma.$transaction(async (tx) => {
+    for (const ligne of commande.lignes) {
+      const lots = await tx.lot.findMany({
+        where: { id_medoc: ligne.id_medoc },
+        orderBy: { date_expiration: 'asc' },
+      });
 
-  // ── Créer un mouvement sortie par ligne ──────────────────────────────────
-  for (const ligne of commande.lignes) {
-    const lot = await prisma.lot.findFirst({
-      where: { id_medoc: ligne.id_medoc },
-      orderBy: { date_expiration: 'asc' }, // FEFO
+      const lot = lots.find(l => (l.quantite_entre - l.quantite_sortie) >= ligne.quantite);
+      if (!lot) throw new Error(`Stock insuffisant pour le médicament ID: ${ligne.id_medoc}`);
+
+      // ← supprimé : tx.lot.update ici (createMouvementWithClient le fait déjà)
+
+      await createMouvementWithClient({
+        type_mvt: 'sortie',
+        quantite_mvt: ligne.quantite,
+        motif: `Commande #${id}`,
+        id_lot: lot.id_lot,
+        id_user: commande.id_user,
+      }, tx);
+    }
+
+    const updated = await tx.commande.update({
+      where: { id_commande: parseInt(id) },
+      data: { statut: 'validee', motif_rejet: motif || null },
+      include: COMMANDE_INCLUDE,
     });
 
-    if (!lot) continue;
-
-    await createMouvement({
-      type_mvt:     'sortie',
-      quantite_mvt: ligne.quantite,
-      motif:        `Commande #${id}`,
-      id_lot:       lot.id_lot,
+    await tx.alerte.create({
+      data: {
+        type_alerte: 'COMMANDE_VALIDEE',
+        message: `Votre commande a été validée.${motif ? ` Motif : ${motif}` : ''}`,
+        role_cible: commande.user.role.toLowerCase(),
+        id_user: commande.id_user,
+      },
     });
-  }
 
-  await prisma.alerte.create({
-    data: {
-      type_alerte: 'COMMANDE_VALIDEE',
-      message:     `Votre commande #${id} a été validée.${motif ? ` Motif : ${motif}` : ''}`,
-      role_cible:  commande.user.role.toLowerCase(),
-      id_user:     commande.id_user,
-    },
+    await log('COMMANDE_VALIDEE', `Commande #${id} validée`, adminId ?? commande.id_user, tx);
+
+    return updated;
+  }, {
+    timeout: 15000,
   });
 
-  await log(
+  NotificationService.toUser(
+    commande.id_user,
     'COMMANDE_VALIDEE',
-    `Commande #${id} validée${motif ? ` — ${motif}` : ''}`,
-    adminId ?? commande.id_user,
+    `Votre commande a été validée.${motif ? ` Motif : ${motif}` : ''}`
   );
 
-  return updated;
+  return result;
 };
 
 // ── REJETER (en_attente → rejetee) ───────────────────────────────────────────
@@ -170,7 +189,7 @@ const rejeter = async (id, motif, adminId) => {
   await prisma.alerte.create({
     data: {
       type_alerte: 'COMMANDE_REJETEE',
-      message:     `Votre commande #${id} a été rejetée. Motif : ${motif}`,
+      message:     `Votre commande a été rejetée. Motif : ${motif}`,
       role_cible:  commande.user.role,
       id_user: commande.id_user,
     },
@@ -180,6 +199,12 @@ const rejeter = async (id, motif, adminId) => {
     'COMMANDE_REJETEE',
     `Commande #${id} rejetée — ${motif}`,
     adminId ?? commande.id_user,
+  );
+
+  NotificationService.toUser(
+    commande.id_user,
+    'COMMANDE_VALIDEE',
+    `Votre commande a été rejetée. Motif : ${motif}`
   );
 
   return updated;
