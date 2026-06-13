@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Sun, Moon } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sun, Moon, XCircle, CheckCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 export default function LoginPage() {
@@ -16,6 +16,9 @@ export default function LoginPage() {
     () => document.documentElement.classList.contains('dark')
   );
 
+  const validateEmail = (v) =>
+    v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Adresse email invalide' : '';
+
   const toggleTheme = () => {
     setDark(d => {
       const next = !d;
@@ -26,8 +29,9 @@ export default function LoginPage() {
   };
 
   const handleChange = (e) => {
-    setForm(p => ({ ...p, [e.target.name]: e.target.value }));
-    setError('');
+    const { name, value } = e.target;
+    setForm(p => ({ ...p, [name]: value }));
+    setError(name === 'email' ? validateEmail(value) : '');
   };
 
   const handleSubmit = async (e) => {
@@ -112,12 +116,7 @@ export default function LoginPage() {
             Connexion
           </h1>
           <p className={`text-sm m-0 text-dynamic ${dark ? 'text-gray-400' : 'text-gray-600'}`}>
-            Accédez à votre espace{' '}
-            <span className="font-semibold text-amber-600">Admin</span>
-            {' '}ou{' '}
-            <span className="font-semibold text-indigo-600">Pharmacien</span>
-             {' '}ou{' '}
-            <span className="font-semibold text-emerald-600">User</span>
+            Accédez à votre espace de compte
           </p>
         </div>
 
@@ -129,10 +128,16 @@ export default function LoginPage() {
             <label className={`text-xs font-semibold text-dynamic ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
               Adresse email
             </label>
-            <div className={`flex items-center gap-2.5 px-3.5 rounded-lg border transition-all duration-200 focus-within:!border-[#16a34a] text-dynamic
+            <div className={`flex items-center gap-2.5 px-3.5 rounded-lg border transition-all duration-200 text-dynamic
+              ${error === 'Adresse email invalide'
+                ? '!border-red-500'
+                : 'focus-within:!border-[#16a34a]'
+              }
               ${dark ? 'bg-white/[0.02] border-white/5' : 'bg-[#f8fdf8] border-black/5'}`}
             >
-              <Mail size={16} className={`shrink-0 text-dynamic ${dark ? 'text-gray-600' : 'text-gray-400'}`} />
+              <Mail size={16} className={`shrink-0 ${
+                error === 'Adresse email invalide' ? 'text-red-400' : dark ? 'text-gray-600' : 'text-gray-400'
+              }`} />
               <input
                 type="email"
                 name="email"
@@ -140,8 +145,15 @@ export default function LoginPage() {
                 onChange={handleChange}
                 placeholder="admin@pharma.mg"
                 autoFocus
-                className={`flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:opacity-40 text-dynamic ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+                className={`flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:opacity-40 ${
+                  dark ? 'text-gray-200' : 'text-gray-800'
+                }`}
               />
+              {form.email && (
+                error === 'Adresse email invalide'
+                  ? <XCircle size={15} className="shrink-0 text-red-400" />
+                  : <CheckCircle size={15} className="shrink-0 text-green-500" />
+              )}
             </div>
           </div>
 

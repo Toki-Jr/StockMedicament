@@ -106,3 +106,12 @@ model lignecommande {
   commande    commande @relation(fields: [id_commande], references: [id_commande], onDelete: Cascade)
   medicament  medicament @relation(fields: [id_medoc], references: [id_medoc])
 }
+
+model OtpCode {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

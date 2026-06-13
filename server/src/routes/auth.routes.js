@@ -56,6 +56,10 @@ const updatePreferences = require('../controllers/updatePreferences.controller')
 
 router.post('/register',    ctrl.register);
 router.post('/login',       ctrl.login);
+router.post('/send-otp',    ctrl.sendOtp);
+router.post('/verify-otp',  ctrl.verifyOtp);
+router.post('/forgot-password',  ctrl.forgotPassword);
+router.post('/reset-password',   ctrl.resetPassword);
 router.get('/me',           authenticate,                     ctrl.getMe);
 router.put('/me',           authenticate,                     ctrl.updateMe);
 router.get('/users',        authenticate, authorize('admin'), ctrl.getAllUsers);

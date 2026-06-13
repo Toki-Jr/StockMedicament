@@ -130,8 +130,14 @@ export default function MouvementsPage() {
 
   /* ── Drawer facturation d'un mouvement existant ── */
   const openFactureDrawer = (mouvement) => {
+    console.log('user dans groupe:', mouvement.user); // ← ajoute ça temporairement
     setMouvementAFacturer(mouvement);
-    setFactureForm(EMPTY_FACTURE);
+    setFactureForm({
+      nomClient:     mouvement.user ? `${mouvement.user.prenom} ${mouvement.user.nom}` : '',
+      emailClient:   mouvement.user?.email ?? '',
+      nomPharmacien: '',
+    });
+    
     setFactureErrors({});
     setFactureResultat(null);
     setFactureDrawerOpen(true);
@@ -201,7 +207,8 @@ export default function MouvementsPage() {
         type_mvt: mvt.type_mvt,
         date_mvt: mvt.date_mvt,
         items: [],
-        totalPrix: 0
+        totalPrix: 0,
+        user:  mvt.user ?? null
       };
     }
     const prixUnitaire = mvt.lot?.medicament?.prix_unitaire ?? 0;

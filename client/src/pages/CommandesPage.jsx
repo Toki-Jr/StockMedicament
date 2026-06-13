@@ -71,9 +71,11 @@ export default function CommandesPage() {
     setPanier(currentPanier => {
       const indexExistant = currentPanier.findIndex(item => item.id_medoc === medocSelectionne.id_medoc);
       if (indexExistant !== -1) {
-        const copy = [...currentPanier];
-        copy[indexExistant].quantite += parseInt(itemForm.quantite);
-        return copy;
+        return currentPanier.map((item, i) =>
+          i === indexExistant
+            ? { ...item, quantite: item.quantite + parseInt(itemForm.quantite) } // ← nouvel objet
+            : item
+        );
       }
       return [...currentPanier, {
         id_medoc: medocSelectionne.id_medoc,

@@ -15,9 +15,6 @@ const alerteRoutes     = require('./routes/alerte.routes');
 const historiqueRoute  = require('./routes/historique.routes');
 const dashboardRoute   = require('./routes/dashboard.routes');
 const factureRoutes    = require('./routes/facture.routes');
-// const emailRouter      = require('./routes/email');
-const emailVerifRoutes = require('./routes/emailVerification.routes');
-
 const { notFoundHandler, errorHandler } = require('./middlewares/error.middleware');
 
 const app = express();
@@ -44,9 +41,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
 
-// app.use('/api',             emailRouter);
 app.use('/api/auth',        authRoutes);
-// app.use('/api/auth',        emailVerifRoutes);
 app.use('/api/medicaments', medicamentRoutes);
 app.use('/api/mouvements',  mouvementRoutes);
 app.use('/api/lots',        lotsRoutes);

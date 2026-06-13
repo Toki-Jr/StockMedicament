@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Sun, Moon, Shield } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Sun, Moon, Shield, XCircle, CheckCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useEmailCheck } from '../hooks/useEmailCheck';
 
 const ROLES = [
   { value: 'user',       label: 'Utilisateur',  color: '#fca5a5', dot: '#ef4444' },
@@ -21,9 +22,24 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw]   = useState(false);
 
+  const { emailStatus, setEmailStatus, checkEmail } = useEmailCheck();
+
+  // handleChange — déclencher après arrêt de frappe (debounce)
+  const debounceRef = useRef(null);
+
+  const validateEmail = (v) =>
+    v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'Adresse email invalide' : '';
+
   const handleChange = (e) => {
-    setForm(p => ({ ...p, [e.target.name]: e.target.value }));
-    setError('');
+    const { name, value } = e.target;
+    setForm(p => ({ ...p, [name]: value }));
+    setError(name === 'email' ? validateEmail(value) : '');
+
+    if (name === 'email') {
+      setEmailStatus('idle');
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => checkEmail(value), 800); // attend 800ms après stop
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -32,10 +48,24 @@ export default function RegisterPage() {
       setError('Veuillez remplir tous les champs.');
       return;
     }
+    // Bloquer si format email invalide
+    const emailErr = validateEmail(form.email);
+    if (emailErr) { setError(emailErr); return; }
+
+    if (emailStatus === 'invalid') {
+      setError("Ce domaine email n'existe pas.");
+      return;
+    }
+
+    if (emailStatus === 'checking') {
+      setError('Vérification de l\'email en cours, veuillez patienter...');
+      return;
+    }
+
     setLoading(true);
     try {
       await register(form);
-      navigate('/login');
+      navigate('/otp', { state: { email: form.email } });
     } catch (err) {
       setError(err.response?.data?.message || "Une erreur est survenue lors de l'inscription.");
     } finally {
@@ -78,13 +108,40 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4" autoComplete="off">
-          {/* Inputs */}
           {['nom', 'prenom', 'email'].map((field) => (
             <div key={field} className="flex flex-col gap-1.5">
               <label className={`text-xs font-semibold capitalize ${dark ? 'text-gray-400' : 'text-gray-500'}`}>{field}</label>
-              <div className={`flex items-center gap-2.5 px-3.5 rounded-lg border transition-all duration-200 focus-within:!border-[#16a34a] ${dark ? 'bg-white/[0.02] border-white/5' : 'bg-[#f8fdf8] border-black/5'}`}>
-                {field === 'email' ? <Mail size={16} className={dark ? 'text-gray-600' : 'text-gray-400'} /> : <User size={16} className={dark ? 'text-gray-600' : 'text-gray-400'} />}
-                <input type={field === 'email' ? 'email' : 'text'} name={field} value={form[field]} onChange={handleChange} className={`flex-1 bg-transparent py-2.5 text-sm outline-none ${dark ? 'text-gray-200' : 'text-gray-800'}`} />
+              <div className={`flex items-center gap-2.5 px-3.5 rounded-lg border transition-all duration-200
+                ${field === 'email' && (error === 'Adresse email invalide' || emailStatus === 'invalid')
+                  ? '!border-red-500'
+                  : 'focus-within:!border-[#16a34a]'
+                }
+                ${dark ? 'bg-white/[0.02] border-white/5' : 'bg-[#f8fdf8] border-black/5'}`}
+              >
+                {field === 'email'
+                  ? <Mail size={16} className={
+                      error === 'Adresse email invalide' || emailStatus === 'invalid'
+                        ? 'text-red-400'
+                        : dark ? 'text-gray-600' : 'text-gray-400'
+                    } />
+                  : <User size={16} className={dark ? 'text-gray-600' : 'text-gray-400'} />
+                }
+                <input
+                  type={field === 'email' ? 'email' : 'text'}
+                  name={field}
+                  value={form[field]}
+                  onChange={handleChange}
+                  className={`flex-1 bg-transparent py-2.5 text-sm outline-none ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+                />
+                {field === 'email' && form.email && (
+                  error === 'Adresse email invalide' || emailStatus === 'invalid' ? (
+                    <XCircle size={15} className="shrink-0 text-red-400" />
+                  ) : emailStatus === 'checking' ? (
+                    <span className="w-[14px] h-[14px] border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin shrink-0" />
+                  ) : emailStatus === 'valid' ? (
+                    <CheckCircle size={15} className="shrink-0 text-green-500" />
+                  ) : null
+                )}
               </div>
             </div>
           ))}

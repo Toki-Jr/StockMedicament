@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { useAlertes } from '../hooks/useAlertes';
 import { useAuth } from '../context/AuthContext';
 import {
   AlertTriangle, Bell, Calendar, CalendarDays,
   Mail, CheckCheck, Trash2, Check, Package,
   ShieldAlert, ClipboardList
 } from 'lucide-react';
+
+import { useSocketContext } from '../context/SocketContext';
+import { useAlertesContext } from '../context/AlertesContext';
 
 /* ─── Meta par type d'alerte configuré pour Tailwind ─── */
 const TYPE_META = {
@@ -136,7 +138,9 @@ export default function AlertesPage() {
     alertes, nonLues, loading, error,
     filtre, setFiltre,
     marquerLu, marquerToutesLues, remove,
-  } = useAlertes();
+  } = useAlertesContext();
+
+  const { connected } = useSocketContext();
 
   const { user } = useAuth();
   const role     = user?.role ?? 'user';
@@ -208,7 +212,18 @@ export default function AlertesPage() {
             <h1 className="text-dynamic font-medium tracking-tight leading-tight text-gray-900 dark:text-white">
               Mes <span className="text-emerald-700 dark:text-emerald-400 font-bold">alertes</span>
             </h1>
-            <p className="text-dynamic text-gray-500 dark:text-neutral-400 mt-0.5">{titreRole.sub}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-dynamic text-gray-500 dark:text-neutral-400">{titreRole.sub}</p>
+              {/* ← indicateur socket */}
+              <span className={`text-[11px] font-medium flex items-center gap-1 ${
+                connected ? 'text-emerald-500' : 'text-red-400'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full inline-block ${
+                  connected ? 'bg-emerald-500 animate-pulse' : 'bg-red-400'
+                }`} />
+                {connected ? 'Temps réel' : 'Hors ligne'}
+              </span>
+            </div>
           </div>
         </div>
 

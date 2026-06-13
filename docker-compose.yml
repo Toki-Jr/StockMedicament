@@ -29,7 +29,7 @@ services:
       JWT_EXPIRES_IN: 24h
       NODE_ENV: development
     env_file:
-      - .env
+      - ./server/.env
     command: >
       sh -c "sleep 5 &&
              npx prisma generate &&

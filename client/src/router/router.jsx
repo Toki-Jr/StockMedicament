@@ -5,6 +5,8 @@ import { PrivateRoute } from './PrivateRoute';
 import AppLayout     from '../components/layout/AppLayout';
 import LoginPage     from '../pages/LoginPage';
 import RegisterPage  from '../pages/RegisterPage';
+import OtpPage from '../pages/OtpPages';
+import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import DashboardPage from '../pages/DashboardPage';
 import LandingPage from '../pages/LandingPage';
 
@@ -30,6 +32,8 @@ const router = createBrowserRouter([
   { path: '/',    element: <LandingPage /> },
   { path: '/login',    element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
+  { path: '/otp', element: <OtpPage /> },
+  { path: '/forgot-password', element: <ForgotPasswordPage /> },
 
   // ── Routes protégées avec Layout ─────────────────────────────
   {

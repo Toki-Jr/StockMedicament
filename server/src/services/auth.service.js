@@ -37,18 +37,6 @@ async function register(userData) {
       approuve: isApprouved 
     }
   });
-  if (process.env.FIREBASE_API_KEY) {
-    try {
-      await axios.post(
-        `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.FIREBASE_API_KEY}`,
-        { email, password, returnSecureToken: false }
-      );
-      console.log('✅ Firebase user créé :', email);
-    } catch (err) {
-      // ← Afficher l'erreur réelle
-      console.error('🔴 Firebase signUp error:', err.response?.data?.error || err.message);
-    }
-  }
   // 5. Gestion des logs et des alertes selon le cas
   if (isFirstAdmin) {
     await log('INSCRIPTION', `Premier administrateur créé automatiquement : ${user.nom} ${user.prenom}`, user.id);
@@ -141,4 +129,14 @@ async function approuverUser(id, adminId) {
   return user;
 }
 
-module.exports = { register, login, getAllUsers, getUserById, updateUser, deleteUser, approuverUser };
+const findUserByEmail = async (email) => {
+  return prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+};
+
+const updatePassword = async (email, newPassword) => {
+  const hash = await bcrypt.hash(newPassword, 10);
+  return prisma.user.update({ where: { email }, data: { password: hash } });
+};
+
+
+module.exports = { register, login, getAllUsers, getUserById, updateUser, deleteUser, approuverUser, findUserByEmail, updatePassword };

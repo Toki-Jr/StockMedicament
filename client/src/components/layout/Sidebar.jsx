@@ -21,8 +21,8 @@ const NAV_GROUPS = [
     roles: ['admin', 'pharmacien'],
     items: [
       { to: '/medicaments', icon: <Pill size={15}/>,        label: 'Médicaments' },
-      { to: '/lots',        icon: <Package size={15}/>,     label: 'Lots'        },
-      { to: '/mouvements',  icon: <ArrowUpDown size={15}/>, label: 'Mouvements'  },
+      { to: '/lots',        icon: <Package size={15}/>,     label: 'Lots'       },
+      { to: '/mouvements',  icon: <ArrowUpDown size={15}/>, label: 'Mouvements', roles: ['admin']},
     ]
   },
   {
@@ -239,9 +239,15 @@ export default function Sidebar({ collapsed, onToggle }) {
           <div className={`absolute bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden z-50 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md ${collapsed ? 'left-[72px] bottom-2 w-48' : 'left-2 right-2 bottom-[calc(100%+8px)]'}`}>
             {!collapsed && (
               <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-900">
-                <div className="w-8 h-8 rounded-full text-white flex items-center justify-center font-bold shrink-0 bg-emerald-600 text-dynamic">
-                  {initials}
-                </div>
+                  {user?.photo ? (
+                    <img src={user.photo} alt="avatar" className="rounded-full object-cover shrink-0 border-2 border-emerald-600"
+                        style={{ width: 32, height: 32 }} />
+                  ) : (
+                    <div className="rounded-full flex items-center justify-center font-bold shrink-0 text-white bg-emerald-600 text-dynamic"
+                        style={{ width: 32, height: 32 }}>
+                      {initials}
+                    </div>
+                  )}
                 <div className="flex flex-col min-w-0 text-dynamic">
                   <span className="font-semibold text-zinc-900 dark:text-zinc-100 truncate text-dynamic">
                     {user?.prenom} {user?.nom}

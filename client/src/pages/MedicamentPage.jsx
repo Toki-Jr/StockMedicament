@@ -171,41 +171,20 @@ export default function MedicamentsPage() {
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shrink-0">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between shrink-0">
           <div className="flex items-center gap-2 px-3.5 rounded-lg flex-1 max-w-[360px] bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 focus-within:border-emerald-500 dark:focus-within:border-emerald-500 transition-colors">
             <Search size={14} className="text-zinc-400 dark:text-zinc-500 shrink-0" />
             <input
               className="flex-1 bg-transparent py-2.5 text-dynamic text-zinc-900 dark:text-zinc-50 outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Recherche…"
+              placeholder="Zone de recherche…"
             />
             {search && (
               <button onClick={() => setSearch('')} className="border-none bg-transparent cursor-pointer p-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
                 <X size={14} />
               </button>
             )}
-          </div>
-          <div className="flex gap-1.5 flex-wrap">
-            {[
-              { val: '',         label: 'Tous'        },
-              { val: 'normal',   label: '✓ Normaux'   },
-              { val: 'critique', label: `⚠ Critiques (${critiques})` },
-            ].map(f => {
-              const active = filtre === f.val;
-              return (
-                <button
-                  key={f.val}
-                  onClick={() => setFiltre(f.val)}
-                  className={`px-4 py-1.5 rounded-full font-semibold cursor-pointer border transition-all text-dynamic ${
-                    active 
-                      ? 'bg-emerald-600 text-white border-transparent' 
-                      : 'bg-transparent text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900'
-                  }`}>
-                  {f.label}
-                </button>
-              );
-            })}
           </div>
         </div>
 
@@ -242,7 +221,7 @@ export default function MedicamentsPage() {
               <table className="w-full text-dynamic border-collapse">
                 <thead>
                   <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-10">
-                    {['Référence', 'Médicament', 'Forme', 'Dosage', 'Prix', 'Seuil stock', 'Péremption', ...(canEdit ? ['Actions'] : [])].map(h => (
+                    {['Code du Médicament', 'Nom du Médicament', 'Forme', 'Dosage', 'Prix', 'Seuil stock', 'Péremption', ...(canEdit ? ['Actions'] : [])].map(h => (
                       <th key={h} className="px-3.5 py-3 text-left font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 text-dynamic">{h}</th>
                     ))}
                   </tr>
