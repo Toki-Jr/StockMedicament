@@ -118,46 +118,85 @@ const valider = async (id, motif, adminId) => {
 
   const result = await prisma.$transaction(async (tx) => {
     for (const ligne of commande.lignes) {
-      const lots = await tx.lot.findMany({
+      const lotMedocs = await tx.lotmedicament.findMany({
         where: { id_medoc: ligne.id_medoc },
-        orderBy: { date_expiration: 'asc' },
+        include: { lot: true },
+        orderBy: { lot: { date_expiration: 'asc' } }, // FEFO
       });
 
-      const lot = lots.find(l => (l.quantite_entre - l.quantite_sortie) >= ligne.quantite);
-      if (!lot) throw new Error(`Stock insuffisant pour le médicament ID: ${ligne.id_medoc}`);
+      // Filtrer les lots non expirés avec du stock disponible
+      const lotsDisponibles = lotMedocs.filter(lm =>
+        (lm.quantite_entre - lm.quantite_sortie) > 0 &&
+        new Date(lm.lot.date_expiration) > new Date()
+      );
 
-      // ← supprimé : tx.lot.update ici (createMouvementWithClient le fait déjà)
+      // Vérifier que le stock total couvre la demande
+      const stockTotal = lotsDisponibles.reduce(
+        (sum, lm) => sum + (lm.quantite_entre - lm.quantite_sortie), 0
+      );
+      if (stockTotal < ligne.quantite) {
+        throw new Error(
+          `Stock insuffisant pour le médicament ID ${ligne.id_medoc} ` +
+          `(demandé: ${ligne.quantite}, disponible: ${stockTotal})`
+        );
+      }
 
-      await createMouvementWithClient({
-        type_mvt: 'sortie',
-        quantite_mvt: ligne.quantite,
-        motif: `Commande #${id}`,
-        id_lot: lot.id_lot,
-        id_user: commande.id_user,
-      }, tx);
+      // Répartir sur plusieurs lots si nécessaire (FEFO)
+      let restant = ligne.quantite;
+
+      for (const lm of lotsDisponibles) {
+        if (restant <= 0) break;
+
+        const dispo    = lm.quantite_entre - lm.quantite_sortie;
+        const aPrendre = Math.min(dispo, restant);
+
+        console.log(`
+          Lot: ${lm.id_lot} | Medoc: ${lm.id_medoc}
+          quantite_entre:  ${lm.quantite_entre}
+          quantite_sortie: ${lm.quantite_sortie}
+          dispo:           ${dispo}
+          aPrendre:        ${aPrendre}
+          restant avant:   ${restant}
+          restant après:   ${restant - aPrendre}
+        `);
+
+        await tx.lotmedicament.update({
+          where: { id: lm.id },
+          data:  { quantite_sortie: { increment: aPrendre } },
+        });
+
+        await createMouvementWithClient({
+          type_mvt:     'sortie',
+          quantite_mvt: aPrendre,
+          motif:        `Commande #${id}`,
+          id_lot:       lm.id_lot,
+          id_medoc:     ligne.id_medoc,
+          id_user:      commande.id_user,
+        }, tx);
+
+        restant -= aPrendre;
+      }
     }
 
     const updated = await tx.commande.update({
-      where: { id_commande: parseInt(id) },
-      data: { statut: 'validee', motif_rejet: motif || null },
+      where:   { id_commande: parseInt(id) },
+      data:    { statut: 'validee', motif_rejet: motif || null },
       include: COMMANDE_INCLUDE,
     });
 
     await tx.alerte.create({
       data: {
         type_alerte: 'COMMANDE_VALIDEE',
-        message: `Votre commande a été validée.${motif ? ` Motif : ${motif}` : ''}`,
-        role_cible: commande.user.role.toLowerCase(),
-        id_user: commande.id_user,
+        message:     `Votre commande a été validée.${motif ? ` Motif : ${motif}` : ''}`,
+        role_cible:  commande.user.role.toLowerCase(),
+        id_user:     commande.id_user,
       },
     });
 
     await log('COMMANDE_VALIDEE', `Commande #${id} validée`, adminId ?? commande.id_user, tx);
 
     return updated;
-  }, {
-    timeout: 15000,
-  });
+  }, { timeout: 15000 });
 
   NotificationService.toUser(
     commande.id_user,

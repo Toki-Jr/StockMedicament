@@ -17,15 +17,24 @@ const getById = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    const { numero_lot, date_fabrication, date_expiration, quantite_entre, id_medoc } = req.body;
-    if (!numero_lot || !date_fabrication || !date_expiration || !quantite_entre || !id_medoc)
-      return badRequest(res, 'Champs requis : numero_lot, date_fabrication, date_expiration, quantite_entre, id_medoc');
+    const { numero_lot, date_fabrication, date_expiration, medicaments } = req.body;
+
+    if (!numero_lot || !date_fabrication || !date_expiration)
+      return badRequest(res, 'Champs requis : numero_lot, date_fabrication, date_expiration');
+
+    if (!medicaments?.length)
+      return badRequest(res, 'Au moins un médicament requis (medicaments: [...])');
+
+    // Valider chaque ligne médicament
+    for (const m of medicaments) {
+      if (!m.id_medoc || !m.quantite_entre)
+        return badRequest(res, 'Chaque médicament doit avoir id_medoc et quantite_entre');
+    }
 
     const data = await svc.create(req.body, req.user.id);
     return created(res, data, 'Lot créé');
   } catch (err) { next(err); }
 };
-
 const update = async (req, res, next) => {
   try {
     const data = await svc.update(req.params.id, req.body, req.user.id);

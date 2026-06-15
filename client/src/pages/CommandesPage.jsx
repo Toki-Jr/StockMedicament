@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCommandes } from '../hooks/useCommandes';
 import { useAuth } from '../context/AuthContext';
 import { getMedicaments } from '../services/medicament.api';
+import MedicamentSearch from './MedicamentSearch';
 import {
   Plus, Trash2, Send, CheckCircle2, XCircle,
   Hourglass, FileEdit, PackageCheck, X, Loader2,
@@ -283,21 +284,16 @@ export default function CommandesPage() {
                       </p>
                       
                       <Field label="Médicament *" error={formErr.id_medoc}>
-                        <select 
-                          className={`w-full px-2.5 py-2 rounded-lg text-dynamic bg-white dark:bg-neutral-900 outline-none text-gray-900 dark:text-white border ${
-                            formErr.id_medoc ? 'border-red-500' : 'border-gray-200 dark:border-neutral-800'
-                          }`}
-                          value={itemForm.id_medoc}
-                          onChange={e => setItemForm(p => ({ ...p, id_medoc: e.target.value }))}
-                        >
-                          <option value="">-- Choisir --</option>
-                          {medicaments.map(m => (
-                            <option key={m.id_medoc} value={m.id_medoc}>
-                              {m.nom}
-                            </option>
-                          ))}
-                        </select>
-                      </Field>
+  <MedicamentSearch
+    medicaments={medicaments}
+    value={itemForm.id_medoc}
+    onChange={(id) => {
+      setItemForm(p => ({ ...p, id_medoc: id }));
+      setFormErr(p => ({ ...p, id_medoc: '' }));
+    }}
+    error={formErr.id_medoc}
+  />
+</Field>
 
                       <Field label="Quantité *" error={formErr.quantite}>
                         <input type="number" min="1" 
@@ -370,16 +366,15 @@ export default function CommandesPage() {
               </div>
 
               {/* Footer Panel */}
-              {/* Footer Panel */}
-<div className="px-5 py-4 flex gap-2.5 shrink-0 border-t border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900">
-  <button onClick={closeSidebar} className="flex-1 py-2.5 rounded-lg text-dynamic font-medium cursor-pointer bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700 transition-colors">Annuler</button>
-  <button onClick={cfg.onConfirm} disabled={saving || (sidebar === 'create' && panier.length === 0)}
-    className={`flex-1 py-2.5 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 transition-all ${
-      cfg.colorType === 'emerald' ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-red-600 hover:bg-red-700'
-    }`}>
-    {saving ? <><Loader2 size={13} className="animate-spin" /> Process...</> : cfg.confirmLabel}
-  </button>
-</div>
+              <div className="px-5 py-4 flex gap-2.5 shrink-0 border-t border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900">
+                <button onClick={closeSidebar} className="flex-1 py-2.5 rounded-lg text-dynamic font-medium cursor-pointer bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700 transition-colors">Annuler</button>
+                <button onClick={cfg.onConfirm} disabled={saving || (sidebar === 'create' && panier.length === 0)}
+                  className={`flex-1 py-2.5 rounded-lg text-dynamic font-medium text-white border-none cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 transition-all ${
+                    cfg.colorType === 'emerald' ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-red-600 hover:bg-red-700'
+                  }`}>
+                  {saving ? <><Loader2 size={13} className="animate-spin" /> Process...</> : cfg.confirmLabel}
+                </button>
+              </div>
             </>
           )}
         </div>

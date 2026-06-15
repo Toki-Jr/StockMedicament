@@ -215,11 +215,20 @@ function genererFacture(data) {
 
     // ── Pied de page — toujours ancré en bas ─────────────────────────────
     const footerY = doc.page.height - 55;
-    doc.moveTo(50, footerY).lineTo(545, footerY).strokeColor(BORD).lineWidth(0.5).stroke();
+
     doc.fillColor(GRIS2).fontSize(8).font("Helvetica")
        .text("Membre de l'Ordre National des Pharmaciens de Madagascar", 50, footerY + 8,  { align: "center", width: 495 })
-       .text("Ce document tient lieu de reçu officiel — Conservez-le comme preuve d'achat.", 50, footerY + 20, { align: "center", width: 495 })
-       .text("Merci de votre confiance.", 50, footerY + 32, { align: "center", width: 495 });
+       .text("Ce document tient lieu de reçu officiel — Conservez-le comme preuve d'achat.",    50, footerY + 20, { align: "center", width: 495 })
+       .text("Merci de votre confiance.",    50, footerY + 32, { align: "center", width: 495 });
+
+    // AJOUTER ICI avant doc.end()
+    stream.on('finish', () => resolve({
+      filePath,
+      fileName,
+      numeroFacture: numRef,
+      totalGeneral,
+    }));
+    stream.on('error', reject);
 
     doc.end();
   });

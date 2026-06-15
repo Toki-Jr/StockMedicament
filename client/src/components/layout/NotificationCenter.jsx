@@ -2,19 +2,19 @@ import { useSocketContext } from '../../context/SocketContext';
 import { useAlertesContext } from '../../context/AlertesContext';
 import { useState, useEffect, useRef, } from 'react';
 import { Link } from 'react-router-dom'
-import { Bell } from 'lucide-react';
+import { Bell, CheckCircle, ClipboardList } from 'lucide-react';
 
 const TYPE_ICONS = {
   alerte_stock:      '🔴',
   stock_faible:      '⚠️',
   commande_livree:   '📦',
-  NOUVELLE_COMMANDE: '📋',
-  COMMANDE_VALIDEE:  '✅',
+  NOUVELLE_COMMANDE: <ClipboardList icon={18} />,
+  COMMANDE_VALIDEE:  <CheckCircle icon={18} />,
   COMMANDE_REJETEE:  '❌',
   RUPTURE_STOCK:     '🚨',
   EXPIRATION:        '📅',
   peremption:        '📅',
-  test:              '🔔',
+  test:              <Bell icon={18} />,
 };
 
 export default function NotificationCenter() {

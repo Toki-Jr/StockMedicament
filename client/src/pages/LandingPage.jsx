@@ -203,7 +203,7 @@ export default function LandingPage() {
             <div className={`flex-1 p-6 flex flex-col gap-5 overflow-y-auto text-dynamic ${isDarkMode ? 'bg-[#0d1510]' : 'bg-[#f8fdf8]'}`}>
               <div className="text-dynamic">
                 <div className="font-syne font-bold text-lg text-dynamic">Tableau de bord</div>
-                <div className="text-sm text-gray-400 mt-0.5 text-dynamic">Bonjour, Jean Robert 👋</div>
+                <div className="text-sm text-gray-400 mt-0.5 text-dynamic">Bonjour, Tokinirina</div>
               </div>
 
               {/* KPIs Widgets */}

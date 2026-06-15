@@ -54,11 +54,19 @@ export default function Sidebar({ collapsed, onToggle }) {
   const [openGroups, setOpenGroups] = useState({ Stock: true, Gestion: true, Système: false });
   const menuRef = useRef(null);
 
-  const [showLogoutModal, setShowLogoutModal] = useState(false); 
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // ── AUTO-COLLAPSE sur petits écrans ──
+  const [autoCollapsed, setAutoCollapsed] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setAutoCollapsed(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  const collapsedEffective = collapsed || autoCollapsed;
 
   const initials = `${user?.prenom?.[0] ?? ''}${user?.nom?.[0] ?? ''}`.toUpperCase();
 
-  // Auto-ouvrir le groupe contenant la route active
   useEffect(() => {
     NAV_GROUPS.forEach(group => {
       if (!group.single && group.items?.some(i => location.pathname.startsWith(i.to))) {
@@ -76,7 +84,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   }, [menuOpen]);
 
   const toggleGroup = (label) => {
-    if (collapsed) return;
+    if (collapsedEffective) return;
     setOpenGroups(p => ({ ...p, [label]: !p[label] }));
   };
 
@@ -86,7 +94,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   return (
     <aside
       className="h-screen flex flex-col sticky top-0 shrink-0 select-none bg-white dark:bg-zinc-950 text-zinc-500 dark:text-zinc-400 border-r border-zinc-200 dark:border-zinc-900 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-      style={{ width: collapsed ? 64 : 240 }}
+      style={{ width: collapsedEffective ? 64 : 240 }}
     >
       {/* ── LOGO ── */}
       <div className="p-4 flex items-center justify-between gap-3 h-[60px] border-b border-zinc-200 dark:border-zinc-900">
@@ -94,44 +102,46 @@ export default function Sidebar({ collapsed, onToggle }) {
           <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white shrink-0 bg-emerald-600 shadow-[0_0_12px_rgba(16,185,129,0.2)] dark:shadow-[0_0_12px_rgba(16,185,129,0.4)]">
             S
           </div>
-          {!collapsed && (
+          {!collapsedEffective && (
             <p className="font-bold text-zinc-900 dark:text-zinc-50 leading-tight truncate animate-in fade-in duration-200 text-dynamic">
               Stock<span className="text-emerald-600 dark:text-emerald-400">'méd</span>
             </p>
           )}
         </div>
-        <button
-          onClick={onToggle}
-          className="w-6 h-6 flex items-center justify-center rounded-md shrink-0 cursor-pointer border-none bg-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
-        >
-          <ChevronLeft size={16} className={`transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} />
-        </button>
+        {/* Le bouton toggle est masqué en auto-collapse (géré automatiquement) */}
+        {!autoCollapsed && (
+          <button
+            onClick={onToggle}
+            className="w-6 h-6 flex items-center justify-center rounded-md shrink-0 cursor-pointer border-none bg-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
+          >
+            <ChevronLeft size={16} className={`transition-transform duration-300 ${collapsedEffective ? 'rotate-180' : ''}`} />
+          </button>
+        )}
       </div>
 
       <nav className="flex flex-col gap-1 p-2 flex-1 overflow-y-auto overflow-x-hidden scrollbar-none">
         {NAV_GROUPS.map(group => {
           if (!group.roles.includes(user?.role)) return null;
 
-          // ── Item simple (Tableau de bord) ──
           if (group.single) {
             const isActive = location.pathname === group.to;
             return (
               <NavLink
                 key={group.to}
                 to={group.to}
-                title={collapsed ? group.label : undefined}
+                title={collapsedEffective ? group.label : undefined}
                 className="no-underline group mb-0.5"
               >
                 <div
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 text-dynamic ${
-                    isActive 
-                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold' 
+                    isActive
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold'
                       : 'text-zinc-600 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-zinc-200'
-                  } ${collapsed ? 'justify-center' : ''}`}
+                  } ${collapsedEffective ? 'justify-center' : ''}`}
                 >
                   <span className="shrink-0">{group.icon}</span>
-                  {!collapsed && <span className="flex-1 truncate text-dynamic">{group.label}</span>}
-                  {isActive && !collapsed && (
+                  {!collapsedEffective && <span className="flex-1 truncate text-dynamic">{group.label}</span>}
+                  {isActive && !collapsedEffective && (
                     <span className="w-1.5 h-1.5 rounded-full shrink-0 animate-pulse bg-emerald-600 dark:bg-emerald-400" />
                   )}
                 </div>
@@ -139,7 +149,6 @@ export default function Sidebar({ collapsed, onToggle }) {
             );
           }
 
-          // ── Groupe avec sous-items ──
           const visibleItems = group.items.filter(i => !i.roles || i.roles.includes(user?.role));
           if (visibleItems.length === 0) return null;
 
@@ -148,18 +157,17 @@ export default function Sidebar({ collapsed, onToggle }) {
 
           return (
             <div key={group.label} className="flex flex-col">
-              {/* Header du groupe */}
               <button
                 onClick={() => toggleGroup(group.label)}
-                title={collapsed ? group.label : undefined}
+                title={collapsedEffective ? group.label : undefined}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 cursor-pointer border-none bg-transparent text-dynamic ${
-                  groupActive 
-                    ? (collapsed ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400' : 'text-emerald-700 dark:text-emerald-400 font-semibold') 
+                  groupActive
+                    ? (collapsedEffective ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400' : 'text-emerald-700 dark:text-emerald-400 font-semibold')
                     : 'text-zinc-600 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-zinc-200'
-                } ${collapsed ? 'justify-center' : ''}`}
+                } ${collapsedEffective ? 'justify-center' : ''}`}
               >
                 <span className="shrink-0">{group.icon}</span>
-                {!collapsed && (
+                {!collapsedEffective && (
                   <>
                     <span className="flex-1 text-left truncate text-dynamic">{group.label}</span>
                     <ChevronDown
@@ -171,8 +179,7 @@ export default function Sidebar({ collapsed, onToggle }) {
                 )}
               </button>
 
-              {/* Sous-items */}
-              {!collapsed && isOpen && (
+              {!collapsedEffective && isOpen && (
                 <div className="flex flex-col gap-0.5 ml-3.5 pl-3.5 mb-1 border-l border-zinc-200 dark:border-zinc-900">
                   {visibleItems.map(item => (
                     <NavLink
@@ -183,8 +190,8 @@ export default function Sidebar({ collapsed, onToggle }) {
                       {({ isActive }) => (
                         <div
                           className={`flex items-center gap-2.5 px-3 py-2 rounded-lg font-medium transition-all duration-150 text-dynamic ${
-                            isActive 
-                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold' 
+                            isActive
+                              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold'
                               : 'text-zinc-500 dark:text-white hover:text-zinc-900 dark:hover:text-zinc-200'
                           }`}
                         >
@@ -208,7 +215,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       <div ref={menuRef} className="relative p-2 border-t border-zinc-200 dark:border-zinc-900">
         <button
           onClick={() => setMenuOpen(prev => !prev)}
-          className={`w-full flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors duration-150 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 border-none bg-transparent ${collapsed ? 'justify-center' : ''}`}
+          className={`w-full flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors duration-150 hover:bg-zinc-100 dark:hover:bg-zinc-900/50 border-none bg-transparent ${collapsedEffective ? 'justify-center' : ''}`}
         >
           {user?.photo ? (
             <img src={user.photo} alt="avatar" className="rounded-full object-cover shrink-0 border-2 border-emerald-600"
@@ -219,7 +226,7 @@ export default function Sidebar({ collapsed, onToggle }) {
               {initials}
             </div>
           )}
-          {!collapsed && (
+          {!collapsedEffective && (
             <>
               <div className="flex flex-col min-w-0 flex-1 text-left text-dynamic">
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100 truncate leading-tight text-dynamic">
@@ -234,10 +241,9 @@ export default function Sidebar({ collapsed, onToggle }) {
           )}
         </button>
 
-        {/* ── Menu popup overlay ── */}
         {menuOpen && (
-          <div className={`absolute bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden z-50 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md ${collapsed ? 'left-[72px] bottom-2 w-48' : 'left-2 right-2 bottom-[calc(100%+8px)]'}`}>
-            {!collapsed && (
+          <div className={`absolute bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden z-50 shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md ${collapsedEffective ? 'left-[72px] bottom-2 w-48' : 'left-2 right-2 bottom-[calc(100%+8px)]'}`}>
+            {!collapsedEffective && (
               <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-200 dark:border-zinc-900">
                   {user?.photo ? (
                     <img src={user.photo} alt="avatar" className="rounded-full object-cover shrink-0 border-2 border-emerald-600"
@@ -267,7 +273,6 @@ export default function Sidebar({ collapsed, onToggle }) {
                 Mon Profil
               </button>
 
-              {/* Ligne Séparatrice & Bouton Déconnexion */}
               <div className="pt-1 mt-1 border-t border-zinc-200 dark:border-zinc-900">
                 <button
                   onClick={() => { setMenuOpen(false); setShowLogoutModal(true); }}
@@ -286,7 +291,6 @@ export default function Sidebar({ collapsed, onToggle }) {
       {showLogoutModal && (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-[340px] rounded-xl p-5 border flex flex-col gap-4 shadow-2xl bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-900 animate-in zoom-in-95 duration-150 text-dynamic">
-            {/* Header & Icone */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/30">
                 <LogOut size={18} className="text-red-500" />
@@ -301,12 +305,10 @@ export default function Sidebar({ collapsed, onToggle }) {
               </div>
             </div>
 
-            {/* Message descriptif */}
             <p className="leading-normal m-0 text-zinc-600 dark:text-zinc-400 text-dynamic">
               Vous devrez vous réauthentifier pour accéder à la gestion des médicaments et des commandes de l'officine.
             </p>
 
-            {/* Actions */}
             <div className="flex gap-2 mt-1">
               <button
                 type="button"
@@ -315,7 +317,7 @@ export default function Sidebar({ collapsed, onToggle }) {
               >
                 Annuler
               </button>
-              
+
               <button
                 type="button"
                 onClick={() => {

@@ -1,5 +1,4 @@
 const prisma = require('../config/prisma');
-
 const { verifierAlertes } = require('./medicament.service');
 
 const getAll = async ({ type_mvt, id_lot } = {}, user = {}) => {
@@ -11,7 +10,11 @@ const getAll = async ({ type_mvt, id_lot } = {}, user = {}) => {
     },
     include: {
       lot: {
-        include: { medicament: { select: { nom: true, code_cip: true, prix_unitaire: true } } },
+        include: {
+          medicaments: {
+            include: { medicament: { select: { nom: true, prix_unitaire: true, } } }
+          }
+        }
       },
       user: true
     },
@@ -22,21 +25,33 @@ const getAll = async ({ type_mvt, id_lot } = {}, user = {}) => {
 const getById = async (id) => {
   const mvt = await prisma.mouvementstock.findUnique({
     where: { id_mvt: parseInt(id) },
-    include: { lot: { include: { medicament: true } } },
+    include: {
+      lot: {
+        include: {
+          medicaments: {                              // ← corrigé
+            include: { medicament: true }
+          }
+        }
+      }
+    },
   });
   if (!mvt) throw { statusCode: 404, message: 'Mouvement introuvable' };
   return mvt;
 };
 
-// Logique pure — accepte tx ou prisma
-const createMouvementWithClient = async ({ type_mvt, quantite_mvt, motif, id_lot, date_mvt, id_user }, client = prisma) => {
+const createMouvementWithClient = async ({ type_mvt, quantite_mvt, motif, id_lot, id_medoc, date_mvt, id_user }, client = prisma) => {
   const qte = parseInt(quantite_mvt);
 
-  const lot = await client.lot.findUnique({ where: { id_lot: parseInt(id_lot) } });
+  const lot = await client.lot.findUnique({
+    where: { id_lot: parseInt(id_lot) },
+    include: { medicaments: true },                  // ← pour accéder aux quantités
+  });
   if (!lot) throw { statusCode: 404, message: 'Lot introuvable' };
 
   if (type_mvt === 'sortie') {
-    const stockRestant = lot.quantite_entre - lot.quantite_sortie;
+    const stockRestant = lot.medicaments.reduce(
+      (sum, m) => sum + (m.quantite_entre - m.quantite_sortie), 0
+    );
     if (qte > stockRestant) {
       throw { statusCode: 400, message: `Stock insuffisant. Disponible : ${stockRestant} unités` };
     }
@@ -48,31 +63,42 @@ const createMouvementWithClient = async ({ type_mvt, quantite_mvt, motif, id_lot
       quantite_mvt: qte,
       motif,
       id_lot:   parseInt(id_lot),
+      id_medoc: id_medoc ? parseInt(id_medoc) : null, // ✅ ajout
       date_mvt: date_mvt ? new Date(date_mvt) : new Date(),
-      ...(id_user && { id_user: parseInt(id_user) }),  // ← ajout
+      ...(id_user && { id_user: parseInt(id_user) }),
     },
   });
 
-  await client.lot.update({
-    where: { id_lot: parseInt(id_lot) },
-    data:
-      type_mvt === 'entree'
-        ? { quantite_entre: { increment: qte } }
-        : { quantite_sortie: { increment: qte } },
-  });
+  // Mettre à jour la quantité sur chaque lotmedicament du lot
+  if (lot.medicaments.length) {
+    const lm = lot.medicaments[0];                   // ← 1 seul médicament principal par mouvement
+    await client.lotmedicament.update({
+      where: { id: lm.id },
+      data:
+        type_mvt === 'entree'
+          ? { quantite_entre:  { increment: qte } }
+          : { quantite_sortie: { increment: qte } },
+    });
+  }
 
   return mouvement;
 };
 
-// Appel standalone (routes normales) — gère sa propre transaction + alertes
 const create = async (data) => {
   const mouvement = await prisma.$transaction(async (tx) => {
     return await createMouvementWithClient(data, tx);
   });
 
-  // Alertes EN DEHORS de la transaction (pas bloquant)
-  const lot = await prisma.lot.findUnique({ where: { id_lot: parseInt(data.id_lot) } });
-  if (lot) await verifierAlertes(lot.id_medoc);
+  // Alertes EN DEHORS de la transaction
+  const lot = await prisma.lot.findUnique({
+    where: { id_lot: parseInt(data.id_lot) },
+    include: { medicaments: true },                  // ← corrigé
+  });
+  if (lot) {
+    for (const m of lot.medicaments) {
+      await verifierAlertes(m.id_medoc);             // ← chaque médicament du lot
+    }
+  }
 
   return mouvement;
 };
@@ -90,7 +116,15 @@ const getStats = async () => {
     prisma.mouvementstock.findMany({
       take: 10,
       orderBy: { date_mvt: 'desc' },
-      include: { lot: { include: { medicament: { select: { nom: true } } } } },
+      include: {
+        lot: {
+          include: {
+            medicaments: {                           // ← corrigé
+              include: { medicament: { select: { nom: true } } }
+            }
+          }
+        }
+      },
     }),
   ]);
 

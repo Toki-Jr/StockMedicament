@@ -109,6 +109,10 @@ export default function MouvementsPage() {
     return Object.keys(e).length === 0;
   };
 
+  const todayCount = mouvements.filter(
+    m => new Date(m.date_mvt).toDateString() === new Date().toDateString()
+  ).length;
+
   const handleSubmit = async (ev) => {
     ev.preventDefault();
     if (!validate()) return;
@@ -200,34 +204,45 @@ export default function MouvementsPage() {
 
   /* ─── Logique de regroupement des mouvements pour affichage ─── */
   const mouvementsGroupes = mouvements.reduce((acc, mvt) => {
-    const key = mvt.motif || 'sans-motif';
-    if (!acc[key]) {
-      acc[key] = {
-        motif: mvt.motif,
-        type_mvt: mvt.type_mvt,
-        date_mvt: mvt.date_mvt,
-        items: [],
-        totalPrix: 0,
-        user:  mvt.user ?? null
-      };
-    }
-    const prixUnitaire = mvt.lot?.medicament?.prix_unitaire ?? 0;
-    const prixLigne = mvt.quantite_mvt * prixUnitaire;
-    
-    acc[key].items.push({
-      nom: mvt.lot?.medicament?.nom ?? 'Médicament',
-      qte: mvt.quantite_mvt,
-      prix: prixLigne
-    });
-    acc[key].totalPrix += prixLigne;
-    return acc;
-  }, {});
+  const key = mvt.motif || 'sans-motif';
+  if (!acc[key]) {
+    acc[key] = {
+      motif:     mvt.motif,
+      type_mvt:  mvt.type_mvt,
+      date_mvt:  mvt.date_mvt,
+      items:     {},        // ← objet keyed par id_medoc
+      totalPrix: 0,
+      user:      mvt.user ?? null,
+    };
+  }
 
-  const groupesArray = Object.values(mouvementsGroupes);
+  const idMed        = mvt.id_medoc ?? mvt.lot?.medicaments?.[0]?.id_medoc ?? 'unknown';
+  const nomMed       = mvt.medicament?.nom ?? mvt.lot?.medicaments?.[0]?.medicament?.nom ?? '—';
+  const prixUnitaire = mvt.medicament?.prix_unitaire ?? mvt.lot?.medicaments?.[0]?.medicament?.prix_unitaire ?? 0;
+  const prixLigne    = mvt.quantite_mvt * prixUnitaire;
 
-  const todayCount = mouvements.filter(
-    m => new Date(m.date_mvt).toDateString() === new Date().toDateString()
-  ).length;
+  if (acc[key].items[idMed]) {
+    // ✅ Même médicament → additionner les quantités
+    acc[key].items[idMed].qte  += mvt.quantite_mvt;
+    acc[key].items[idMed].prix += prixLigne;
+  } else {
+    acc[key].items[idMed] = {
+      nom:  nomMed,
+      qte:  mvt.quantite_mvt,
+      prix: prixLigne,
+    };
+  }
+
+  acc[key].totalPrix += prixLigne;
+  return acc;
+}, {});
+
+// Convertir items en tableau pour l'affichage
+const groupesArray = Object.values(mouvementsGroupes).map(g => ({
+  ...g,
+  items: Object.values(g.items), // ← tableau pour le .map() dans le JSX
+}));
+
 
   return (
     <div className="h-screen flex overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xl bg-white dark:bg-zinc-950 text-dynamic">
@@ -580,7 +595,7 @@ export default function MouvementsPage() {
                 <h2 className="text-dynamic font-semibold text-zinc-900 dark:text-zinc-50">Générer une facture</h2>
                 <p className="text-dynamic text-zinc-500 dark:text-zinc-400 mt-0.5">
                   {mouvementAFacturer
-                    ? `${mouvementAFacturer.lot?.medicament?.nom ?? 'Médicament'} — ${mouvementAFacturer.quantite_mvt} unité(s)`
+                    ? `${mouvementAFacturer.items.length} article(s) — ${mouvementAFacturer.totalPrix.toLocaleString('fr-FR')} Ar`
                     : 'Mouvement sélectionné'}
                 </p>
               </div>

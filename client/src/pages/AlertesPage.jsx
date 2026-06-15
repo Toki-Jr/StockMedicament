@@ -313,24 +313,53 @@ export default function AlertesPage() {
           </div>
         ) : (
           alertes.map(alerte => {
-            const meta      = getMeta(alerte.type_alerte);
-            const { Icon }  = meta;
+            const meta     = getMeta(alerte.type_alerte);
+            const { Icon } = meta;
+
+            // ── Urgence expiration ──
+            const isExpiry = ['peremption', 'EXPIRATION'].includes(alerte.type_alerte);
+            const matchJours = isExpiry ? alerte.message?.match(/dans\s+(\d+)\s+jour/i) : null;
+            const diffDays   = matchJours ? parseInt(matchJours[1], 10) : null;
+
+            const isExpired = diffDays === null || diffDays <= 0;
+            const isDanger  = isExpiry && (isExpired || diffDays <= 15);
+            const isWarning = isExpiry && !isDanger;
+
+            // Override badge + bordure gauche selon urgence
+            const badge   = isExpiry
+              ? isDanger
+                ? 'bg-red-50 dark:bg-red-950/40 text-red-500 dark:text-red-400 border-red-200 dark:border-red-900/30'
+                : 'bg-orange-50 dark:bg-orange-950/40 text-orange-500 dark:text-orange-400 border-orange-200 dark:border-orange-900/30'
+              : meta.badge;
+
+            const leftBdr = isExpiry
+              ? isDanger ? 'border-l-red-500' : 'border-l-orange-400'
+              : meta.leftBdr;
+
+            const dateColor = !isExpiry
+              ? 'text-gray-400 dark:text-neutral-500'
+              : isDanger
+                ? 'text-red-500 dark:text-red-400 font-semibold'
+                : 'text-orange-400 dark:text-orange-300 font-medium';
+
+            const badgeLabel = isExpired ? 'Expiré' : diffDays <= 15 ? `⚠ ${diffDays}j` : `${diffDays}j`;
+
             return (
               <div
                 key={alerte.id_alerte}
-                className={`flex items-start justify-between gap-4 px-5 py-4 border border-l-[3px] border-gray-200 dark:border-neutral-800 ${meta.leftBdr} rounded-r-xl bg-white dark:bg-neutral-900/40 transition-opacity duration-200 ${
+                className={`flex items-start justify-between gap-4 px-5 py-4 border border-l-[3px] border-gray-200 dark:border-neutral-800 ${leftBdr} rounded-r-xl bg-white dark:bg-neutral-900/40 transition-opacity duration-200 ${
                   alerte.lu ? 'opacity-40' : 'opacity-100'
                 }`}
               >
                 {/* Icône */}
-                <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 mt-0.5 border ${meta.badge}`}>
+                <div className={`w-9 h-9 rounded-md flex items-center justify-center shrink-0 mt-0.5 border ${badge}`}>
                   <Icon size={16} />
                 </div>
 
                 {/* Corps */}
                 <div className="flex-1 min-w-0 text-dynamic">
                   <div className="flex items-center gap-1.5 flex-wrap mb-1.5 text-dynamic">
-                    <span className={`font-medium px-2 py-0.5 rounded-full border text-dynamic ${meta.badge}`}>
+                    <span className={`font-medium px-2 py-0.5 rounded-full border text-dynamic ${badge}`}>
                       {meta.label}
                     </span>
                     {!alerte.lu && (
@@ -344,15 +373,25 @@ export default function AlertesPage() {
                       </span>
                     )}
                   </div>
+
                   <p className="leading-relaxed mb-1 text-gray-900 dark:text-white font-medium text-dynamic">
                     {alerte.message}
                   </p>
-                  <p className="text-gray-400 dark:text-neutral-500 text-dynamic">
-                    {new Date(alerte.createdAt).toLocaleDateString('fr-FR', {
-                      day: '2-digit', month: 'long', year: 'numeric',
-                      hour: '2-digit', minute: '2-digit',
-                    })}
-                  </p>
+
+                  {/* Date + badge jours */}
+                  <div className={`flex items-center gap-1.5 text-dynamic ${dateColor}`}>
+                    <span>
+                      {new Date(alerte.createdAt).toLocaleDateString('fr-FR', {
+                        day: '2-digit', month: 'long', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit',
+                      })}
+                    </span>
+                    {isExpiry && (
+                      <span className="text-[11px] px-1.5 py-0.5 rounded font-semibold border border-current bg-current/10">
+                        {badgeLabel}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}
@@ -365,7 +404,6 @@ export default function AlertesPage() {
                       <Check size={12} /> Lu
                     </button>
                   )}
-                  
                   <button
                     onClick={() => handleDelete(alerte.id_alerte)}
                     className="w-[30px] h-[30px] flex items-center justify-center rounded border cursor-pointer bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-dynamic"

@@ -20,17 +20,11 @@ export default function DashboardPage() {
   const isAdmin      = user?.role === 'admin';
   const isPharmacien = user?.role === 'pharmacien';
   const isUser       = user?.role === 'user';
-  const [isVerifying, setIsVerifying] = useState(false);
 
   const [stats,     setStats]     = useState(null);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
   const [chartData, setChartData] = useState([]);
-
-  const showToast = (msg, type = 'success') => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3500);
-  };
 
   const load = async () => {
     setLoading(true);

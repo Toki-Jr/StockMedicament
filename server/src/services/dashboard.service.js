@@ -13,7 +13,7 @@ const getStats = async () => {
     usersApprouves,
     commandesValidees,
     commandesEnAttente,
-    stockTotal,
+    stockTotal,          // ✅ depuis lotmedicament
     mouvementsAujourdhui,
     dernieresCommandes,
     derniersMovements,
@@ -26,10 +26,14 @@ const getStats = async () => {
     prisma.user.count({ where: { approuve: true } }),
     prisma.commande.count({ where: { statut: 'validee' } }),
     prisma.commande.count({ where: { statut: 'en_attente' } }),
-    prisma.lot.aggregate({ _sum: { quantite_entre: true, quantite_sortie: true } }),
+
+    // ✅ quantite_entre / quantite_sortie sont dans lotmedicament
+    prisma.lotmedicament.aggregate({
+      _sum: { quantite_entre: true, quantite_sortie: true },
+    }),
+
     prisma.mouvementstock.count({ where: { date_mvt: today } }),
 
-    // ✅ plus de include medicament direct — on passe par lignes
     prisma.commande.findMany({
       take: 5,
       orderBy: { date_commande: 'desc' },
@@ -43,13 +47,23 @@ const getStats = async () => {
       },
     }),
 
+    // ✅ lot → medicaments (lotmedicament) → medicament
     prisma.mouvementstock.findMany({
       take: 5,
       orderBy: { date_mvt: 'desc' },
       include: {
-        lot: { include: { medicament: { select: { nom: true } } } },
+        lot: {
+          include: {
+            medicaments: {
+              include: {
+                medicament: { select: { nom: true } },
+              },
+            },
+          },
+        },
       },
     }),
+
     prisma.mouvementstock.aggregate({
       _sum: { quantite_mvt: true },
       where: { type_mvt: 'entree', date_mvt: today },
@@ -61,7 +75,7 @@ const getStats = async () => {
   ]);
 
   const stockDisponible =
-    (stockTotal._sum.quantite_entre ?? 0) -
+    (stockTotal._sum.quantite_entre  ?? 0) -
     (stockTotal._sum.quantite_sortie ?? 0);
 
   return {
@@ -74,7 +88,11 @@ const getStats = async () => {
     stockDisponible,
     mouvementsAujourdhui,
     dernieresCommandes,
-    derniersMovements,
+    // ✅ aplatir le nom du 1er médicament du lot pour l'affichage
+    derniersMovements: derniersMovements.map(mv => ({
+      ...mv,
+      nomMedicament: mv.lot?.medicaments?.[0]?.medicament?.nom ?? '—',
+    })),
     entreesAujourdhui: entreesAggregate._sum.quantite_mvt ?? 0,
     sortiesAujourdhui: sortiesAggregate._sum.quantite_mvt ?? 0,
   };
@@ -92,8 +110,6 @@ const getStatsUser = async (userId) => {
     prisma.commande.count({ where: { id_user: userId, statut: 'validee' } }),
     prisma.commande.count({ where: { id_user: userId, statut: 'rejetee' } }),
     prisma.commande.count({ where: { id_user: userId } }),
-
-    // ✅ même correction ici
     prisma.commande.findMany({
       where:   { id_user: userId },
       take:    5,
@@ -129,18 +145,17 @@ const getCommandesParJour = async () => {
     const gte = new Date(date.setHours(0, 0, 0, 0));
     const lte = new Date(date.setHours(23, 59, 59, 999));
 
-    // ✅ quantite est dans lignecommande, pas commande — on agrège via lignes
     const lignes = await prisma.lignecommande.groupBy({
-      by:      ['id_medoc'],
-      _sum:    { quantite: true },
-      where:   {
+      by:    ['id_medoc'],
+      _sum:  { quantite: true },
+      where: {
         commande: {
           date_commande: { gte, lte },
           statut: { not: 'brouillon' },
         },
       },
       orderBy: { _sum: { quantite: 'desc' } },
-      take:    1,
+      take: 1,
     });
 
     let topMedicament = null;

@@ -34,8 +34,9 @@ model medicament {
   prix_unitaire           Int
   seuil_alerte_qte        Int
   seuil_alerte_peremption Int
-  lots                    lot[]
+  lots                    lotmedicament[]
   lignes                  lignecommande[]
+  mouvements              mouvementstock[]
   alertes                 alerte[]
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt
@@ -46,11 +47,20 @@ model lot {
   numero_lot       String
   date_fabrication DateTime
   date_expiration  DateTime
-  quantite_entre   Int
-  quantite_sortie  Int
-  id_medoc         Int
-  medicament       medicament       @relation(fields: [id_medoc], references: [id_medoc])
   mouvements       mouvementstock[]
+  medicaments      lotmedicament[]
+}
+
+model lotmedicament {
+  id              Int        @id @default(autoincrement())
+  id_lot          Int
+  id_medoc        Int
+  quantite_entre  Int
+  quantite_sortie Int        @default(0)
+  lot             lot        @relation(fields: [id_lot], references: [id_lot])
+  medicament      medicament @relation(fields: [id_medoc], references: [id_medoc])
+
+  @@unique([id_lot, id_medoc])
 }
 
 model mouvementstock {
@@ -60,9 +70,11 @@ model mouvementstock {
   date_mvt     DateTime @default(now())
   motif        String
   id_lot       Int
-  id_user      Int?                                           
-  lot          lot      @relation(fields: [id_lot], references: [id_lot])
-  user         user?    @relation(fields: [id_user], references: [id]) 
+  id_user      Int?   
+  id_medoc     Int?                                        
+  lot          lot         @relation(fields: [id_lot], references: [id_lot])
+  medicament   medicament? @relation(fields: [id_medoc], references: [id_medoc])
+  user         user?       @relation(fields: [id_user], references: [id]) 
 }
 
 model commande {
@@ -105,13 +117,4 @@ model lignecommande {
   id_medoc    Int
   commande    commande @relation(fields: [id_commande], references: [id_commande], onDelete: Cascade)
   medicament  medicament @relation(fields: [id_medoc], references: [id_medoc])
-}
-
-model OtpCode {
-  id        Int      @id @default(autoincrement())
-  email     String
-  otp       String
-  expiresAt DateTime
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
 }
