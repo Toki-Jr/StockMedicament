@@ -1,14 +1,15 @@
 const authService = require('../services/auth.service');
 const { success, created, badRequest, serverError } = require('../utils/response');
-const { generateOtp, saveOtp, verifyOtp: checkOtp, checkOtpOnly } = require('../services/otpService');
+const { generateOtp, saveOtp, verifyOtp: consumeOtp, checkOtpOnly } = require('../services/otpService');
 const { sendOtpEmail } = require('../services/emailService');
 
 const register = async (req, res) => {
   try {
-    const user = await authService.register(req.body);
+    const email = req.body.email?.toLowerCase().trim();
+    const user = await authService.register({ ...req.body, email });
     const otp = generateOtp();
-    saveOtp(`register:${req.body.email}`, otp);        // ← préfixe
-    await sendOtpEmail(req.body.email, otp);
+    saveOtp(`register:${email}`, otp);
+    await sendOtpEmail(email, otp);
     return created(res, user);
   } catch (err) {
     return badRequest(res, err.message);
@@ -89,10 +90,10 @@ const approuverUser = async (req, res) => {
 };
 
 const sendOtp = async (req, res) => {
-  const { email } = req.body;
+  const email = req.body.email?.toLowerCase().trim();
   if (!email) return res.status(400).json({ message: 'Email requis' });
   const otp = generateOtp();
-  saveOtp(`register:${email}`, otp);                   // ← préfixe
+  saveOtp(`register:${email}`, otp);
   try {
     await sendOtpEmail(email, otp);
     res.json({ message: 'Code envoyé' });
@@ -102,8 +103,11 @@ const sendOtp = async (req, res) => {
 };
 
 const verifyOtp = (req, res) => {
-  const { email, otp } = req.body;
-  const result = checkOtp(`register:${email}`, otp);   // ← préfixe
+  console.log('body:', req.body); 
+  const { email, otp, context } = req.body;
+  const normalizedEmail = email?.toLowerCase().trim();
+  const key = `${context ?? 'register'}:${normalizedEmail}`;
+  const result = checkOtpOnly(key, otp);
   if (!result.valid) return res.status(400).json({ message: result.reason });
   res.json({ message: 'Email vérifié avec succès' });
 };
@@ -115,7 +119,7 @@ const forgotPassword = async (req, res) => {
     const user = await authService.findUserByEmail(email);
     if (!user) return res.status(404).json({ message: 'Aucun compte avec cet email' });
     const otp = generateOtp();
-    saveOtp(`reset:${email}`, otp);                    // ← préfixe
+    saveOtp(`reset:${email}`, otp);                  
     await sendOtpEmail(email, otp);
     res.json({ message: 'Code envoyé' });
   } catch (err) {
@@ -127,7 +131,7 @@ const resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
   if (!email || !otp || !newPassword)
     return res.status(400).json({ message: 'Champs manquants' });
-  const result = checkOtp(`reset:${email}`, otp);      // ← préfixe
+  const result = consumeOtp(`reset:${email}`, otp);  // ← consumeOtp au lieu de verifyOtp
   if (!result.valid) return res.status(400).json({ message: result.reason });
   try {
     await authService.updatePassword(email, newPassword);

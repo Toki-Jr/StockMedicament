@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   // Mémorise l'user et token
   const login = useCallback(async (credentials) => {
     const res = await apiLogin(credentials);
-    const { token, user } = res.data;
+    const { token, user } = res; // ← plus de .data.data
     storage.setItem('token', token);
     storage.setItem('user', JSON.stringify(user));
     setToken(token);

@@ -16,18 +16,6 @@ const getById = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-/**
- * POST /api/mouvements
- *
- * Champs habituels : type_mvt, quantite_mvt, motif, id_lot
- * Champs facture   : nomClient, emailClient, nomPharmacien
- *   → obligatoires uniquement si type_mvt === 'sortie'
- *
- * Comportement :
- *   - Enregistre toujours le mouvement (entree ou sortie)
- *   - Si type_mvt === 'sortie' : génère la facture PDF + envoie email auto
- *   - Si type_mvt === 'entree' : mouvement seul, pas de facture
- */
 const create = async (req, res, next) => {
   try {
     const {
@@ -112,6 +100,13 @@ const create = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+const deleteMvt = async (req, res, next) => {
+  try {
+    const data = await svc.deleteMvt(req.params.id);
+    return success(res, data);
+  } catch (err) { next(err); }
+};
+
 const getStats = async (req, res, next) => {
   try {
     const data = await svc.getStats();
@@ -119,4 +114,4 @@ const getStats = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getAll, getById, create, getStats };
+module.exports = { getAll, getById, create, getStats, deleteMvt };

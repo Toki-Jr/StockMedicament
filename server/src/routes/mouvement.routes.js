@@ -56,8 +56,9 @@ router.get('/stats', authenticate, ctrl.getStats);
  *       201: { description: Mouvement créé, lot mis à jour, alertes vérifiées }
  *       400: { description: Stock insuffisant ou données invalides }
  */
-router.get('/', authenticate, ctrl.getAll);
-router.post('/', authenticate, ctrl.create);
+router.get('/',       authenticate, ctrl.getAll);
+router.post('/',      authenticate, ctrl.create);
+router.delete('/:id', authenticate, authorize('admin'), ctrl.deleteMvt);
 
 /**
  * @swagger

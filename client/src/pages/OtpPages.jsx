@@ -57,7 +57,7 @@ export default function OtpPage() {
     setLoading(true);
     setError('');
     try {
-      await api.post('/auth/verify-otp', { email, otp });
+      await api.post('/auth/verify-otp', { email, otp, context: 'register' });
       navigate('/login', { state: { verified: true } });
     } catch (err) {
       setError(err.response?.data?.message || 'Code incorrect.');

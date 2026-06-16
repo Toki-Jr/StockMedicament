@@ -32,5 +32,10 @@ export function useMouvements() {
     await fetch();
   };
 
-  return { mouvements, stats, loading, error, filtre, setFiltre, create, refetch: fetch };
+  const remove = async (id) => {
+    await api.deleteMouvement(id);
+    await fetch();
+  }
+
+  return { mouvements, stats, loading, error, filtre, setFiltre, create, remove, refetch: fetch };
 }

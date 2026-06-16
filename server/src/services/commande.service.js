@@ -119,21 +119,24 @@ const valider = async (id, motif, adminId) => {
   const result = await prisma.$transaction(async (tx) => {
     for (const ligne of commande.lignes) {
       const lotMedocs = await tx.lotmedicament.findMany({
-        where: { id_medoc: ligne.id_medoc },
+        where:   { id_medoc: ligne.id_medoc },
         include: { lot: true },
         orderBy: { lot: { date_expiration: 'asc' } }, // FEFO
       });
 
-      // Filtrer les lots non expirés avec du stock disponible
-      const lotsDisponibles = lotMedocs.filter(lm =>
-        (lm.quantite_entre - lm.quantite_sortie) > 0 &&
-        new Date(lm.lot.date_expiration) > new Date()
-      );
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
 
-      // Vérifier que le stock total couvre la demande
+      const lotsDisponibles = lotMedocs.filter(lm => {
+        const exp = new Date(lm.lot.date_expiration);
+        exp.setUTCHours(0, 0, 0, 0);
+        return (lm.quantite_entre - lm.quantite_sortie) > 0 && exp >= today;
+      });
+
       const stockTotal = lotsDisponibles.reduce(
         (sum, lm) => sum + (lm.quantite_entre - lm.quantite_sortie), 0
       );
+
       if (stockTotal < ligne.quantite) {
         throw new Error(
           `Stock insuffisant pour le médicament ID ${ligne.id_medoc} ` +
@@ -141,7 +144,6 @@ const valider = async (id, motif, adminId) => {
         );
       }
 
-      // Répartir sur plusieurs lots si nécessaire (FEFO)
       let restant = ligne.quantite;
 
       for (const lm of lotsDisponibles) {
@@ -149,16 +151,6 @@ const valider = async (id, motif, adminId) => {
 
         const dispo    = lm.quantite_entre - lm.quantite_sortie;
         const aPrendre = Math.min(dispo, restant);
-
-        console.log(`
-          Lot: ${lm.id_lot} | Medoc: ${lm.id_medoc}
-          quantite_entre:  ${lm.quantite_entre}
-          quantite_sortie: ${lm.quantite_sortie}
-          dispo:           ${dispo}
-          aPrendre:        ${aPrendre}
-          restant avant:   ${restant}
-          restant après:   ${restant - aPrendre}
-        `);
 
         await tx.lotmedicament.update({
           where: { id: lm.id },
@@ -187,7 +179,7 @@ const valider = async (id, motif, adminId) => {
     await tx.alerte.create({
       data: {
         type_alerte: 'COMMANDE_VALIDEE',
-        message:     `Votre commande a été validée.${motif ? ` Motif : ${motif}` : ''}`,
+        message:     `Ma commande a été validée.${motif ? ` Motif : ${motif}` : ''}`,
         role_cible:  commande.user.role.toLowerCase(),
         id_user:     commande.id_user,
       },
@@ -201,7 +193,7 @@ const valider = async (id, motif, adminId) => {
   NotificationService.toUser(
     commande.id_user,
     'COMMANDE_VALIDEE',
-    `Votre commande a été validée.${motif ? ` Motif : ${motif}` : ''}`
+    `Ma commande a été validée.${motif ? ` Motif : ${motif}` : ''}`
   );
 
   return result;
@@ -228,7 +220,7 @@ const rejeter = async (id, motif, adminId) => {
   await prisma.alerte.create({
     data: {
       type_alerte: 'COMMANDE_REJETEE',
-      message:     `Votre commande a été rejetée. Motif : ${motif}`,
+      message:     `Ma commande a été rejetée. Motif : ${motif}`,
       role_cible:  commande.user.role,
       id_user: commande.id_user,
     },
@@ -243,7 +235,7 @@ const rejeter = async (id, motif, adminId) => {
   NotificationService.toUser(
     commande.id_user,
     'COMMANDE_VALIDEE',
-    `Votre commande a été rejetée. Motif : ${motif}`
+    `Ma commande a été rejetée. Motif : ${motif}`
   );
 
   return updated;
@@ -272,4 +264,19 @@ const removeBrouillon = async (id, userId, userRole) => {
   );
 };
 
-module.exports = { getAll, getById, create, envoyer, valider, rejeter, removeBrouillon };
+const removeCommande = async (id, userId) => {
+  const commande = await getById(id);
+
+  if (!commande) throw new Error('Commande introuvable.');
+
+  await prisma.commande.delete({
+    where: { id_commande: parseInt(id) },
+  });
+
+  await log(
+    'COMMANDE_SUPPRIMEE',
+    `Commande supprimée (statut: ${commande.statut})`,
+    userId,
+  );
+};
+module.exports = { getAll, getById, create, envoyer, valider, rejeter, removeBrouillon, removeCommande };

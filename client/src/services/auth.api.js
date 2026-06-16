@@ -1,10 +1,9 @@
-import { data } from "react-router-dom";
 import api from "./axios.instance";
 
 export const login = async ({ email, password }) => {
     const res = await api.post('/auth/login', { email, password });
 
-    return res.data;  // { success, message, data: { token, user } }
+    return res.data.data;
 }
 
 export const register = async ({ nom, prenom, email, password, role }) => {

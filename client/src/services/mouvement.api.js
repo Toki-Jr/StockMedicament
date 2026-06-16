@@ -8,3 +8,6 @@ export const getMouvementStats = () =>
 
 export const createMouvement = (data) =>
   api.post('/mouvements', data).then(r => r.data.data);
+
+export const deleteMouvement = (id) => 
+  api.delete(`/mouvements/${id}`).then(r => r.data);

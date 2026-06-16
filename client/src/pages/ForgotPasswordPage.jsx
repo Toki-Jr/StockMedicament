@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
     if (otp.length < 6) { setError('Entrez les 6 chiffres'); return; }
     setLoading(true); setError('');
     try {
-      await api.post('/auth/verify-otp', { email, otp });
+      await api.post('/auth/verify-otp', { email, otp, context: 'reset' });
       setStep('password');
     } catch (err) {
       setError(err.response?.data?.message || 'Code incorrect');
@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
     if (!newPassword) { setError('Mot de passe requis'); return; }
     setLoading(true); setError('');
     try {
-      await api.post('/auth/reset-password', { email, otp, newPassword });
+      await api.post('/auth/reset-password', { email, otp, newPassword, context: 'reset' });
       navigate('/login', { state: { reset: true } });
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur réinitialisation');

@@ -39,6 +39,8 @@ export default function LotsPage() {
   const [errors,      setErrors]    = useState({});
   const [medRow, setMedRow] = useState({ id_medoc: '', quantite_entre: '', quantite_sortie: '0' });
   const [medErr, setMedErr] = useState('');
+  const [medSearch, setMedSearch] = useState('');
+  const [medDropdown, setMedDropdown] = useState(false);
 
   const isEdit = !!selected;
 
@@ -414,26 +416,70 @@ export default function LotsPage() {
               </label>
 
               {/* Ligne d'ajout */}
-              <div className="grid grid-cols-[1fr_80px_72px_auto] gap-1.5 items-center">
-                <select
-                  className="w-full px-2.5 py-2 text-dynamic text-sm bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 outline-none text-zinc-900 dark:text-zinc-50"
-                  value={medRow.id_medoc}
-                  onChange={e => setMedRow(p => ({ ...p, id_medoc: e.target.value }))}>
-                  <option value="">Médicament</option>
-                  {medicaments.map(m => (
-                    <option key={m.id_medoc} value={m.id_medoc}>{m.nom} ({m.forme})</option>
-                  ))}
-                </select>
-                <input type="number" min="1" placeholder="Entrée"
+              <div className="grid grid-cols-[1fr_80px_auto] gap-1.5 items-start">
+                
+                {/* Combobox médicament */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Rechercher médicament…"
+                    className="w-full px-2.5 py-2 text-dynamic text-sm bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 outline-none text-zinc-900 dark:text-zinc-50"
+                    value={
+                      medRow.id_medoc
+                        ? (medicaments.find(m => m.id_medoc === parseInt(medRow.id_medoc))?.nom ?? medSearch)
+                        : medSearch
+                    }
+                    onChange={e => {
+                      setMedSearch(e.target.value);
+                      setMedRow(p => ({ ...p, id_medoc: '' }));
+                      setMedDropdown(true);
+                    }}
+                    onFocus={() => setMedDropdown(true)}
+                    onBlur={() => setTimeout(() => setMedDropdown(false), 150)}
+                  />
+                  {medDropdown && (
+                    <div className="absolute z-50 top-[calc(100%+4px)] left-0 w-full max-h-48 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg">
+                      {medicaments
+                        .filter(m =>
+                          !medSearch ||
+                          m.nom.toLowerCase().includes(medSearch.toLowerCase()) ||
+                          m.forme.toLowerCase().includes(medSearch.toLowerCase())
+                        )
+                        .map(m => (
+                          <button
+                            key={m.id_medoc}
+                            type="button"
+                            onMouseDown={() => {
+                              setMedRow(p => ({ ...p, id_medoc: String(m.id_medoc) }));
+                              setMedSearch('');
+                              setMedDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-sm cursor-pointer transition-colors
+                              ${parseInt(medRow.id_medoc) === m.id_medoc
+                                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400'
+                                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                              }`}>
+                            <span className="font-medium">{m.nom}</span>
+                            <span className="ml-1.5 text-zinc-400 dark:text-zinc-500 text-xs">({m.forme})</span>
+                          </button>
+                        ))}
+                      {medicaments.filter(m =>
+                        !medSearch ||
+                        m.nom.toLowerCase().includes(medSearch.toLowerCase()) ||
+                        m.forme.toLowerCase().includes(medSearch.toLowerCase())
+                      ).length === 0 && (
+                        <p className="px-3 py-2 text-sm text-zinc-400 dark:text-zinc-500">Aucun résultat</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <input type="number" min="1" placeholder="Quantité"
                   className="w-full px-2.5 py-2 text-dynamic text-sm bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 outline-none text-zinc-900 dark:text-zinc-50"
                   value={medRow.quantite_entre}
                   onChange={e => setMedRow(p => ({ ...p, quantite_entre: e.target.value }))}
                 />
-                {/* <input type="number" min="0" placeholder="Sortie"
-                  className="w-full px-2.5 py-2 text-dynamic text-sm bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 focus:border-emerald-500 outline-none text-zinc-900 dark:text-zinc-50"
-                  value={medRow.quantite_sortie}
-                  onChange={e => setMedRow(p => ({ ...p, quantite_sortie: e.target.value }))}
-                /> */}
+
                 <button type="button" onClick={ajouterMedoc}
                   className="h-[34px] px-2.5 rounded-lg text-dynamic text-sm font-medium cursor-pointer bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 transition-colors flex items-center gap-1 whitespace-nowrap">
                   <Plus size={12} /> Ajouter

@@ -17,7 +17,7 @@ const STATUT_META = {
 };
 
 export default function CommandesPage() {
-  const { commandes, loading, error, create, envoyer, removeBrouillon, valider, rejeter } = useCommandes();
+  const { commandes, loading, error, create, envoyer, removeBrouillon, removeCommande, valider, rejeter } = useCommandes();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
@@ -146,10 +146,18 @@ export default function CommandesPage() {
     finally { setSaving(false); }
   };
 
+    const handleRemoveCommande = async () => {
+      setSaving(true);
+      try { await removeCommande(selected.id_commande); closeSidebar(); showToast('Commande supprimée'); }
+      catch (e) { showToast(e.response?.data?.message || 'Erreur', 'error'); }
+      finally { setSaving(false); }
+    };
+
   const CONFIGS = {
     create:  { title: 'Nouvelle commande',      icon: <Plus size={16} />,     colorType: 'emerald', confirmLabel: 'Créer la commande',    onConfirm: handleCreateCommande },
     envoyer: { title: 'Envoyer la commande',    icon: <Send size={14} />,     colorType: 'emerald', confirmLabel: 'Envoyer',                onConfirm: handleEnvoyer },
     delete:  { title: 'Supprimer le brouillon', icon: <Trash2 size={15} />,   colorType: 'red',     confirmLabel: 'Supprimer',              onConfirm: handleDelete  },
+    removeCommande:  { title: 'Supprimer la commande', icon: <Trash2 size={15} />, colorType: 'red', confirmLabel: 'Supprimer définitivement', onConfirm: handleRemoveCommande },
     valider: { title: 'Valider la commande',    icon: <CheckCircle2 size={15} />, colorType: 'emerald', confirmLabel: 'Confirmer la validation', onConfirm: handleValider },
     rejeter: { title: 'Rejeter la commande',    icon: <XCircle size={15} />,    colorType: 'red',     confirmLabel: 'Confirmer le rejet',     onConfirm: handleRejeter },
   };
@@ -223,7 +231,11 @@ export default function CommandesPage() {
                   <ActionBtn type="emerald" icon={<Send size={13} />} label="Envoyer" onClick={() => openSidebar('envoyer', c)} />
                   <ActionBtn type="red" icon={<Trash2 size={13} />} label="Supprimer" onClick={() => openSidebar('delete', c)} />
                 </div>
-              ) : <span className="text-dynamic text-gray-400 dark:text-neutral-500 italic">Lecture seule</span>}
+              ) : c.statut === 'rejetee' || c.statut === 'validee' ? (
+                <ActionBtn type="red" icon={<Trash2 size={13} />} label="Supprimer" onClick={() => openSidebar('removeCommande', c)} />
+              ) : (
+                <span className="text-dynamic text-gray-400 dark:text-neutral-500 italic">Lecture seule</span>
+              )}
             />
           </>
         )}
@@ -241,6 +253,7 @@ export default function CommandesPage() {
                 <div className="flex gap-1.5">
                   <ActionBtn type="emerald" icon={<CheckCircle2 size={13} />} label="Valider" onClick={() => openSidebar('valider', c)} disabled={saving} />
                   <ActionBtn type="red" icon={<XCircle size={13} />} label="Rejeter" onClick={() => openSidebar('rejeter', c)} disabled={saving} />
+                  <ActionBtn type="red" icon={<Trash2 size={13} />} label="Supprimer" onClick={() => openSidebar('removeCommande', c)} disabled={saving} />
                 </div>
               )}
             />
@@ -284,16 +297,16 @@ export default function CommandesPage() {
                       </p>
                       
                       <Field label="Médicament *" error={formErr.id_medoc}>
-  <MedicamentSearch
-    medicaments={medicaments}
-    value={itemForm.id_medoc}
-    onChange={(id) => {
-      setItemForm(p => ({ ...p, id_medoc: id }));
-      setFormErr(p => ({ ...p, id_medoc: '' }));
-    }}
-    error={formErr.id_medoc}
-  />
-</Field>
+                        <MedicamentSearch
+                          medicaments={medicaments}
+                          value={itemForm.id_medoc}
+                          onChange={(id) => {
+                            setItemForm(p => ({ ...p, id_medoc: id }));
+                            setFormErr(p => ({ ...p, id_medoc: '' }));
+                          }}
+                          error={formErr.id_medoc}
+                        />
+                      </Field>
 
                       <Field label="Quantité *" error={formErr.quantite}>
                         <input type="number" min="1" 
@@ -347,6 +360,9 @@ export default function CommandesPage() {
                 {/* Confirmations Relatives aux Actions standard */}
                 {sidebar === 'envoyer' && <ConfirmCard colorType="emerald" icon={<Send size={24} />} title="Envoyer au traitement ?" desc={`Dossier #${selected?.id_commande}`} note="Inmodifiable après envoi." />}
                 {sidebar === 'delete' && <ConfirmCard colorType="red" icon={<Trash2 size={24} />} title="Supprimer ce brouillon ?" desc={`Dossier #${selected?.id_commande}`} note="Action irréversible." />}
+                {sidebar === 'removeCommande' && (
+                  <ConfirmCard colorType="red" icon={<Trash2 size={24} />} title="Supprimer cette commande ?" desc={`Dossier #${selected?.id_commande}`} note="Action irréversible, toutes les lignes seront supprimées." />
+                )}
                 {sidebar === 'valider' && (
                   <>
                     <ConfirmCard colorType="emerald" icon={<CheckCircle2 size={24} />} title="Valider la commande globale ?" desc={`Dossier #${selected?.id_commande}`} />
@@ -493,7 +509,7 @@ function ActionBtn({ type, icon, label, onClick, disabled }) {
           ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30 dark:hover:bg-emerald-900/40' 
           : 'bg-red-50 text-red-600 border-red-200/50 hover:bg-red-100 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30 dark:hover:bg-red-900/40'
       }`}>
-      {icon}{label}
+      {icon} {label}
     </button>
   );
 }

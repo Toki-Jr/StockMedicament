@@ -1,40 +1,61 @@
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
-// Stockage en mémoire (remplace par Redis ou table DB en prod)
-const otpStore = new Map();
+const STORE_PATH = path.join(__dirname, '../../.otp_store.json');
+
+function loadStore() {
+  try {
+    const raw = fs.readFileSync(STORE_PATH, 'utf8').replace(/^\uFEFF/, ''); // strip BOM
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+function saveStore(store) {
+  fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2), 'utf8');
+}
 
 function generateOtp() {
   return crypto.randomInt(100000, 999999).toString();
 }
 
-function saveOtp(email, otp) {
-  otpStore.set(email, {
-    otp,
-    expiresAt: Date.now() + 10 * 60 * 1000, // 10 min
-  });
+function saveOtp(key, otp) {
+  const store = loadStore();
+  store[key] = { otp, expiresAt: Date.now() + 10 * 60 * 1000 };
+  saveStore(store);
 }
 
-function verifyOtp(email, inputOtp) {
-  const record = otpStore.get(email);
+function verifyOtp(key, inputOtp) {
+  const store = loadStore();
+  const record = store[key];
   if (!record) return { valid: false, reason: 'Code introuvable' };
   if (Date.now() > record.expiresAt) {
-    otpStore.delete(email);
+    delete store[key];
+    saveStore(store);
     return { valid: false, reason: 'Code expiré' };
   }
   if (record.otp !== inputOtp) return { valid: false, reason: 'Code incorrect' };
-  otpStore.delete(email); // usage unique
+  delete store[key];
+  saveStore(store);
   return { valid: true };
 }
 
-function checkOtpOnly(email, inputOtp) {
-  const record = otpStore.get(email);
+function checkOtpOnly(key, inputOtp) {
+  const sanitizedKey = key.trim().replace(/[\u200B-\u200D\uFEFF]/g, '');
+  const store = loadStore();
+  console.log('Store:', store);
+  const record = store[sanitizedKey];
+  console.log('Record:', record);
   if (!record) return { valid: false, reason: 'Code introuvable' };
   if (Date.now() > record.expiresAt) {
-    otpStore.delete(email);
+    delete store[sanitizedKey];
+    saveStore(store);
     return { valid: false, reason: 'Code expiré' };
   }
   if (record.otp !== inputOtp) return { valid: false, reason: 'Code incorrect' };
-  return { valid: true }; 
+  return { valid: true };
 }
 
 module.exports = { generateOtp, saveOtp, verifyOtp, checkOtpOnly };

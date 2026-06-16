@@ -1,4 +1,5 @@
 const service = require('../services/commande.service');
+const { success } = require('../utils/response');
 
 const create          = async (req, res) => {
   try { res.status(201).json(await service.create(req.user.id, req.body)); }
@@ -45,4 +46,12 @@ const getById         = async (req, res) => {
   catch (err) { res.status(err.statusCode ?? 500).json({ message: err.message }); }
 };
 
-module.exports = { create, envoyer, removeBrouillon, valider, rejeter, getAll, getById };
+const removeCommande = async (req, res, next) => {
+  try {
+    await service.removeCommande(req.params.id, req.user.id);
+    return success(res, null, 'Commande supprimée');
+  } catch (err) { next(err); }
+};
+
+
+module.exports = { create, envoyer, removeBrouillon, valider, rejeter, getAll, getById, removeCommande };

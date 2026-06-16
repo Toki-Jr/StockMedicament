@@ -43,8 +43,9 @@ export function useCommandes() {
   const create          = async (data)      => { await api.createCommande(data);       await fetch(); };
   const envoyer         = async (id)        => { await api.envoyerCommande(id);        await fetch(); };
   const removeBrouillon = async (id)        => { await api.deleteBrouillon(id);        await fetch(); };
+  const removeCommande  = async (id)        => { await api.deleteCommande(id);         await fetch(); };
   const valider         = async (id, motif) => { await api.validerCommande(id, motif); await fetch(); };
   const rejeter         = async (id, motif) => { await api.rejeterCommande(id, motif); await fetch(); };
 
-  return { commandes, loading, error, create, envoyer, removeBrouillon, valider, rejeter, refetch: fetch };
+  return { commandes, loading, error, create, envoyer, removeBrouillon,  removeCommande, valider, rejeter, refetch: fetch };
 }

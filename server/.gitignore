@@ -3,3 +3,4 @@ node_modules
 .env
 factures
 /generated/prisma
+.otp_store.json

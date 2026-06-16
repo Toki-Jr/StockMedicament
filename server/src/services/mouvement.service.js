@@ -44,7 +44,7 @@ const createMouvementWithClient = async ({ type_mvt, quantite_mvt, motif, id_lot
 
   const lot = await client.lot.findUnique({
     where: { id_lot: parseInt(id_lot) },
-    include: { medicaments: true },                  // ← pour accéder aux quantités
+    include: { medicaments: true },                  
   });
   if (!lot) throw { statusCode: 404, message: 'Lot introuvable' };
 
@@ -63,7 +63,7 @@ const createMouvementWithClient = async ({ type_mvt, quantite_mvt, motif, id_lot
       quantite_mvt: qte,
       motif,
       id_lot:   parseInt(id_lot),
-      id_medoc: id_medoc ? parseInt(id_medoc) : null, // ✅ ajout
+      id_medoc: id_medoc ? parseInt(id_medoc) : null, 
       date_mvt: date_mvt ? new Date(date_mvt) : new Date(),
       ...(id_user && { id_user: parseInt(id_user) }),
     },
@@ -71,7 +71,7 @@ const createMouvementWithClient = async ({ type_mvt, quantite_mvt, motif, id_lot
 
   // Mettre à jour la quantité sur chaque lotmedicament du lot
   if (lot.medicaments.length) {
-    const lm = lot.medicaments[0];                   // ← 1 seul médicament principal par mouvement
+    const lm = lot.medicaments[0];                  
     await client.lotmedicament.update({
       where: { id: lm.id },
       data:
@@ -101,6 +101,10 @@ const create = async (data) => {
   }
 
   return mouvement;
+};
+
+const deleteMvt = async (id) => {
+  return await prisma.mouvementstock.delete({ where: { id_mvt: parseInt(id) } });
 };
 
 const getStats = async () => {
@@ -135,4 +139,4 @@ const getStats = async () => {
   };
 };
 
-module.exports = { getAll, getById, create, getStats, createMouvementWithClient };
+module.exports = { getAll, getById, create, getStats, createMouvementWithClient, deleteMvt };

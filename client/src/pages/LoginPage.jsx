@@ -31,7 +31,7 @@ export default function LoginPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(p => ({ ...p, [name]: value }));
-    setError(name === 'email' ? validateEmail(value) : '');
+    setError(name === 'email' ? validateEmail(value) : ''); // ← reset error à '' si password change
   };
 
   const handleSubmit = async (e) => {
@@ -43,6 +43,9 @@ export default function LoginPage() {
       resetToLight();
       navigate('/dashboard');
     } catch (err) {
+      console.log('status:', err.response?.status);
+      console.log('data:', err.response?.data);
+      console.log('message:', err.response?.data?.message);
       setError(err.response?.data?.message || 'Email ou mot de passe incorrect.');
     } finally {
       setLoading(false);

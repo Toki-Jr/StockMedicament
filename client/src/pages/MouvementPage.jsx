@@ -4,7 +4,7 @@ import { getLots } from '../services/lot.api';
 import { facturer, getDownloadUrl } from '../services/facture.api';
 import {
   CalendarDays, TrendingDown, TrendingUp, ArrowUpDown,
-  Plus, X, Check, Loader2, Package, FileText, Receipt
+  Plus, X, Check, Loader2, Package, FileText, Receipt, Trash2
 } from 'lucide-react';
 
 /* ─── Palette de couleur pour les badges / états ─── */
@@ -45,7 +45,7 @@ const EMPTY = { type_mvt: 'entree', quantite_mvt: '', motif: '', id_lot: '' };
 const EMPTY_FACTURE = { nomClient: '', emailClient: '', nomPharmacien: '' };
 
 export default function MouvementsPage() {
-  const { mouvements, stats, loading, error, filtre, setFiltre, create } = useMouvements();
+  const { mouvements, stats, loading, error, filtre, setFiltre, create, remove } = useMouvements();
 
   /* ── États drawer création ── */
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -53,6 +53,9 @@ export default function MouvementsPage() {
   const [lots,       setLots]       = useState([]);
   const [form,       setForm]       = useState(EMPTY);
   const [errors,     setErrors]     = useState({});
+
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting,     setDeleting]     = useState(false);
 
   const [expandedRows, setExpandedRows] = useState({});
 
@@ -204,46 +207,62 @@ export default function MouvementsPage() {
 
   /* ─── Logique de regroupement des mouvements pour affichage ─── */
   const mouvementsGroupes = mouvements.reduce((acc, mvt) => {
-  const key = mvt.motif || 'sans-motif';
-  if (!acc[key]) {
-    acc[key] = {
-      motif:     mvt.motif,
-      type_mvt:  mvt.type_mvt,
-      date_mvt:  mvt.date_mvt,
-      items:     {},        // ← objet keyed par id_medoc
-      totalPrix: 0,
-      user:      mvt.user ?? null,
-    };
-  }
+    const key = mvt.motif || 'sans-motif';
+    if (!acc[key]) {
+      acc[key] = {
+        motif:     mvt.motif,
+        type_mvt:  mvt.type_mvt,
+        date_mvt:  mvt.date_mvt,
+        items:     {},        // ← objet keyed par id_medoc
+        totalPrix: 0,
+        user:      mvt.user ?? null,
+      };
+    }
 
-  const idMed        = mvt.id_medoc ?? mvt.lot?.medicaments?.[0]?.id_medoc ?? 'unknown';
-  const nomMed       = mvt.medicament?.nom ?? mvt.lot?.medicaments?.[0]?.medicament?.nom ?? '—';
-  const prixUnitaire = mvt.medicament?.prix_unitaire ?? mvt.lot?.medicaments?.[0]?.medicament?.prix_unitaire ?? 0;
-  const prixLigne    = mvt.quantite_mvt * prixUnitaire;
+    const idMed        = mvt.id_medoc ?? mvt.lot?.medicaments?.[0]?.id_medoc ?? 'unknown';
+    const nomMed       = mvt.medicament?.nom ?? mvt.lot?.medicaments?.[0]?.medicament?.nom ?? '—';
+    const prixUnitaire = mvt.medicament?.prix_unitaire ?? mvt.lot?.medicaments?.[0]?.medicament?.prix_unitaire ?? 0;
+    const prixLigne    = mvt.quantite_mvt * prixUnitaire;
 
-  if (acc[key].items[idMed]) {
-    // ✅ Même médicament → additionner les quantités
-    acc[key].items[idMed].qte  += mvt.quantite_mvt;
-    acc[key].items[idMed].prix += prixLigne;
-  } else {
-    acc[key].items[idMed] = {
-      nom:  nomMed,
-      qte:  mvt.quantite_mvt,
-      prix: prixLigne,
-    };
-  }
+    if (acc[key].items[idMed]) {
+      // Même médicament → additionner les quantités
+      acc[key].items[idMed].qte  += mvt.quantite_mvt;
+      acc[key].items[idMed].prix += prixLigne;
+    } else {
+      acc[key].items[idMed] = {
+        nom:  nomMed,
+        qte:  mvt.quantite_mvt,
+        prix: prixLigne,
+      };
+    }
 
-  acc[key].totalPrix += prixLigne;
-  return acc;
-}, {});
+    acc[key].totalPrix += prixLigne;
+    return acc;
+  }, {});
 
-// Convertir items en tableau pour l'affichage
-const groupesArray = Object.values(mouvementsGroupes).map(g => ({
-  ...g,
-  items: Object.values(g.items), // ← tableau pour le .map() dans le JSX
-}));
+  // Convertir items en tableau pour l'affichage
+  const groupesArray = Object.values(mouvementsGroupes).map(g => ({
+    ...g,
+    items: Object.values(g.items), // ← tableau pour le .map() dans le JSX
+  }));
 
-
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      // Supprimer tous les mouvements du groupe (même motif)
+      const ids = mouvements
+        .filter(m => m.motif === deleteTarget.motif && m.type_mvt === deleteTarget.type_mvt)
+        .map(m => m.id_mvt);
+      await Promise.all(ids.map(id => remove(id)));
+      showToast('Mouvement(s) supprimé(s)');
+      setDeleteTarget(null);
+    } catch (e) {
+      showToast(e.response?.data?.message || 'Erreur suppression', 'error');
+    } finally {
+      setDeleting(false);
+    }
+  };
   return (
     <div className="h-screen flex overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xl bg-white dark:bg-zinc-950 text-dynamic">
 
@@ -427,17 +446,24 @@ const groupesArray = Object.values(mouvementsGroupes).map(g => ({
                               hour: '2-digit', minute: '2-digit',
                             })}
                           </td>
-                        <td className="px-4 py-3">
-                          {estSortie ? (
-                            <button
-                              onClick={() => openFactureDrawer(g)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 dark:bg-amber-950/30 dark:border-amber-900/50 dark:text-amber-400 transition-all cursor-pointer">
-                              <Receipt size={13} /> Facturer
-                            </button>
-                          ) : (
-                            <span className="opacity-30 text-sm">—</span>
-                          )}
-                        </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5">
+                              {estSortie ? (
+                                <button
+                                  onClick={() => openFactureDrawer(g)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 dark:bg-amber-950/30 dark:border-amber-900/50 dark:text-amber-400 transition-all cursor-pointer">
+                                  <Receipt size={13} /> Facturer
+                                </button>
+                              ) : (
+                                <span className="opacity-30 text-sm">—</span>
+                              )}
+                              <button
+                                onClick={() => setDeleteTarget(g)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 dark:bg-red-950/30 dark:border-red-900/50 dark:text-red-400 transition-all cursor-pointer">
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </td>
                       </tr>
                     );
                   })}
@@ -719,6 +745,63 @@ const groupesArray = Object.values(mouvementsGroupes).map(g => ({
                 </button>
               </div>
             </form>
+          )}
+
+          {deleteTarget && (
+            <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+              <div className="w-[340px] rounded-xl p-5 border flex flex-col gap-4 shadow-2xl bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-900 animate-in zoom-in-95 duration-150">
+                
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/30">
+                    <Trash2 size={18} className="text-red-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 text-dynamic leading-tight">
+                      Supprimer ce mouvement ?
+                    </h3>
+                    <p className="text-zinc-400 dark:text-zinc-500 text-dynamic mt-0.5">
+                      {deleteTarget.items.length} article(s) — {deleteTarget.motif}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Résumé */}
+                <div className="px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex flex-col gap-1">
+                  {deleteTarget.items.map((it, idx) => (
+                    <div key={idx} className="flex justify-between text-dynamic text-[13px] text-zinc-600 dark:text-zinc-400">
+                      <span>{it.nom}</span>
+                      <span className="font-semibold text-red-600 dark:text-red-400">x{it.qte}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-dynamic text-zinc-500 dark:text-zinc-400 text-[13px]">
+                  Cette action est irréversible. Le stock sera recalculé automatiquement.
+                </p>
+
+                {/* Actions */}
+                <div className="flex gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(null)}
+                    disabled={deleting}
+                    className="flex-1 py-2 rounded-lg font-medium cursor-pointer border text-dynamic bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50">
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex-1 py-2 rounded-lg font-semibold text-white border-none cursor-pointer flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-60">
+                    {deleting
+                      ? <><Loader2 size={13} className="animate-spin" /> Suppression…</>
+                      : <><Trash2 size={13} /> Supprimer</>
+                    }
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

@@ -80,7 +80,8 @@ router.get('/',                authenticate,                        ctrl.getAll)
 router.get('/:id',             authenticate,                        ctrl.getById);
 router.post('/',               authenticate,                        ctrl.create);
 router.patch('/:id/envoyer',   authenticate,                        ctrl.envoyer);
-router.delete('/:id',          authenticate,                        ctrl.removeBrouillon);
+router.delete('/:id/brouillon',authenticate,                        ctrl.removeBrouillon);
+router.delete('/:id',          authenticate,                        ctrl.removeCommande);
 router.patch('/:id/valider',   authenticate, authorize('admin'),    ctrl.valider);
 router.patch('/:id/rejeter',   authenticate, authorize('admin'),    ctrl.rejeter);
 
