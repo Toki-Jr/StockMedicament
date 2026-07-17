@@ -19,18 +19,6 @@ const { notFoundHandler, errorHandler } = require('./middlewares/error.middlewar
 
 const app = express();
 
-// TEST ONLY — à supprimer après
-const { getIo } = require('./config/socket');
-
-app.get('/test-notif', (req, res) => {
-  getIo().emit('notification', {
-    type: 'test',
-    message: '🎉 Socket.io fonctionne !',
-    at: new Date(),
-  });
-  res.json({ ok: true });
-});
-
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));

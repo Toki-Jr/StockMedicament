@@ -8,7 +8,7 @@ function initSocket(httpServer) {
         cors: {
             origin: [
                 'http://localhost:5173', // Application React (Vite)
-                'http://localhost:3000', // Application React (CRA)
+                'https://stock-medicament.vercel.app', // prod
             ],
             methods: ['GET', 'POST'],
             credentials: true,
