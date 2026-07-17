@@ -280,7 +280,7 @@ export default function DashboardPage() {
                     left={
                       <div>
                         <p className="font-semibold text-zinc-900 dark:text-zinc-50">
-                          {m.lot?.medicament?.nom ?? '—'}
+                          {m.lot?.medicaments?.[0]?.medicament?.nom ?? '—'}
                         </p>
                         <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
                           Lot n° {m.lot?.numero_lot} · {m.motif}
