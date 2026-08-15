@@ -25,5 +25,8 @@
   },
   "scripts": {
     "dev": "nodemon src/server.js"
+  },
+  "engines": {
+    "node": "22.X"
   }
 }

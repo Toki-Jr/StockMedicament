@@ -13,7 +13,11 @@ const options = {
       version: '1.0.0',
       description: 'Documentation de l\'API de gestion de stock de médicaments',
     },
-    servers: [ // Declaration du serveur
+    servers: [
+      {
+        url: 'https://stockmedoc.onrender.com/api',
+        description: 'Serveur de production',
+      },
       {
         url: 'http://localhost:5000/api',
         description: 'Serveur de développement',
